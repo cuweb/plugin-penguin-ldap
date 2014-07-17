@@ -3,15 +3,11 @@
 class Penguin_Settings {
 
 	public $options;
-	private $options_general;
-	private $options_roles;
-	private $roles;
-	private $options_set;
+	private $options_general, $options_roles, $roles, $options_set;
 
 	public function __construct() {
 		$this->options_general = "pgn_general";
 		$this->options_roles = "pgn_roles";
-		$this->options_set = false;
 	}
 
 	public function load_all_options () {
@@ -80,16 +76,24 @@ class Penguin_Settings {
 			'last_name');
 
 		$this->give_value_if_not_set ( 'user',
-			 'objectclass');
+			'objectclass');
 
-		if ( ! isset ( $this->options['default_role']) ) {
+		$this->sync_priority_array();
+
+		/**
+		 * If there is no default role setting or the default setting is set to a role
+		 * that no longer exists, set the default role to the lowest priority role to be
+		 * safe.
+		 */
+		if ( ( ! isset ( $this->options['default_role'] ) ) ||
+			( ! $this->role_exists($this->options['default_role']) ) ) {
 			$lowest_priority_role = $this->get_lowest_priority_role();
 			$lowest_priority_role_name = $lowest_priority_role[0];
 			$this->options['default_role'] = $lowest_priority_role_name;
 		}
 
 		$this->give_value_if_not_set ( 0,
-			 'enable_group_mapping' );
+			'enable_group_mapping' );
 
 		$this->options_set = true;
 	}
@@ -130,26 +134,6 @@ class Penguin_Settings {
 
 	public function get_option ( $option_index, $sub1 = null, $sub2 = null, $default = null) {
 		return $this->get_option_temp ( $default, $option_index, $sub1, $sub2);
-
-		/**
-		 *
-		 * Instead of this function being called, one can just access the array directly,
-		 * this function is made for testing purposes before changing everything
-		 * to access the array directly. However I might decide to keep this function
-		 * because the ability to set an overriding default might be of use somewhere.
-		 */
-		// if ( $this->options_set ) {
-			// if ($default != null) return $default;
-			// if ( $sub1 == null ) {
-				// return $this->options[$option_index];
-			// }
-			// elseif ( $sub2 == null ) {
-				// return $this->options[$options_index][$sub1];
-			// }
-			// else {
-				// return $this->options[$options_index][$sub1][$sub2];
-			// }
-		// }
 	}
 
 	public function add_settings () {
@@ -453,7 +437,7 @@ class Penguin_Settings {
 			'anchorID' => 'mapping-section',
 			'rowDataCount' => 2,
 			'initialSettings' => $this->get_option( 'groups' ),
-			'defaultSettings' => array ("", "editor")
+			'defaultSettings' => array ( "", "editor" )
 		);
 
 		echo '<div id="'.$group_mapping_options['anchorID'].'"></div>';
@@ -476,28 +460,17 @@ class Penguin_Settings {
 		<?php
 	}
 
-	// Functionality broken on first-time use of plugin, defaulting to subscriber as 
-	// the lowest priority role. 
 	private function get_lowest_priority_role () {
-		// $priority_array = $this->options['priority']; #1
-		// $priority_array = $this->get_option('priority'); // #1
-		//$role_name = $this->get_highest_value($priority_array); // #1
-
+		$priority_array = $this->options['priority'];
+		$role_name = $this->get_highest_value( $priority_array );
 		/**
-		 * If the lowest priority in the priority array actually doesn't exist
-		 * (the role must have been deleted recently), then unset that index and look for
-		 * a new lowest priority that we can actually use.
-		 */
-		// if ( ! $this->role_exists ($role_name) ) { #1
-			// unset($priority_array[$role_name]); #1
-			// $role_name = $this->get_highest_value($priority_array); #1
-		// }
+		* If the lowest priority in the priority array actually doesn't exist
+		* (the role must have been deleted recently), then unset that index and look for
+		* a new lowest priority that we can actually use.
+		*/
 
-		/**
-		 * Return an array with the role lowest priority low and associated label.
-		 */
-		//return array ( $role_name, $this->roles[$role_name] ); #1
-		return array ( 'subscriber', 'Subscriber' ); // #1
+		// Return an array with the role lowest priority low and associated label.
+		return array ( $role_name, $this->roles[$role_name] ); #1
 	}
 
 	/**s
@@ -513,27 +486,23 @@ class Penguin_Settings {
 	 * the role name and the value being the role label
 	 */
 	public function load_roles( $selected = false ) {
+
+		if ( ! function_exists( 'get_editable_roles' ) ) {
+			require_once( ABSPATH . '/wp-admin/includes/user.php' );
+		}
+
 		$editable_roles = array_reverse( get_editable_roles() );
 		$out_array = array();
 
 		foreach ( $editable_roles as $role => $details ) {
-			$out_array [esc_attr($role)] = translate_user_role($details['name']);
+			$out_array [esc_attr($role)] = translate_user_role( $details['name'] );
 		}
 		$this->roles = $out_array;
 
+		// May need removal... however I'm keeping this for now since it ended up
+		// saving me a good 10 minutes of time.
 		if ( ! isset( $this->options ) ) {
 			die ("use load_all_options() before you load roles!");
-		}
-
-		if ( ! $this->role_exists( $this->options['default_role'] ) ) {
-
-			$lowest_priority_role = $this->get_lowest_priority_role();
-			$lowest_priority_role_name = $lowest_priority_role[0];
-
-			echo '<strong style="background-color:red">The mapped role ' . $this->options['default_role'] . '
-				has been deleted. Save new changes now to prevent lockout!</strong>';
-
-			$this->options['default_role'] = $lowest_priority_role_name;
 		}
 	}
 
@@ -541,7 +510,7 @@ class Penguin_Settings {
 		if ( ! isset( $this->roles ) ) {
 			$this->load_roles();
 		}
-		return isset ( $this->roles[$role_name_that_might_exist] );
+		return array_key_exists ( $role_name_that_might_exist, $this->roles );
 	}
 
 	public function do_priority_section () {
@@ -550,7 +519,7 @@ class Penguin_Settings {
 		}
 
 		$priority_array = $this->get_option( 'priority' );
-		
+
 		echo '<ul id="sortable">';
 
 		/**
@@ -565,11 +534,11 @@ class Penguin_Settings {
 			 * Go through each role in the priority array and display the role if it
 			 * exists.
 			 */
-			
+
 			foreach ( $priority_array as $priority_level ) {
 				$role = array_search( $priority_level, $priority_array );
 				if ( $this->role_exists( $role ) ) {
-					echo '<li><input type="text" style="display:none" name="'.
+					echo '<li><input type="text" style="display:all" name="'.
 						$this->options_roles.'[priority]['. $role .']" value="' .
 						$this->get_option('priority', $role) .
 						 '" readonly></input><label class="priority-grab">'. $this->roles[$role] .
@@ -579,30 +548,61 @@ class Penguin_Settings {
 			}
 		}
 
-		/**
-		 * If these settings haven't been saved before, or a new role has been created,
-		 * then the priority array is empty or has some values that need to be set. 
-		 * We need to look at the differences between the list of roles and the list of 
-		 * roles than have been assigned priorities using array_diff_key(). The result 
-		 * will give us all the roles that haven't been assigned a priority yet. Once 
-		 * they have been, this only comes in handy when new roles have been added.
-		 */
-		$missing_roles = array_diff_key( (array) $this->roles, (array) $priority_array );
+		echo '</ul>';
+	}
 
-		if ( ! empty( $missing_roles ) ) {
-			$missing_roles = array_reverse( $missing_roles );
-			foreach ( $missing_roles as $role_key => $role_val ) {
-				if ( isset( $this->roles[$role_key] ) ) {
-					echo '<li><input type="text" style="display:none" name="'.
-						$this->options_roles.'[priority]['. $role_key .']" value="' .
-						 ++ $lowest_priority . // Decrease priority further
-						 '" readonly></input><label>'. $this->roles[$role_key] .
-						 '</label><br></li>';
-					$this->add_missing_priority_index($role_key, $lowest_priority);
+	/**
+	 * If these settings haven't been saved before, or a new role has been created,
+	 * then the priority array is empty or has some values that need to be set.
+	 * We need to look at the differences between the list of roles and the list of
+	 * roles than have been assigned priorities using array_diff_key(). The result
+	 * will give us all the roles that haven't been assigned a priority yet.
+	 */
+	private function sync_priority_array() {
+		if ( ! isset( $this->roles ) ) {
+			$this->load_roles();
+		}
+
+		// Must be a reference (&)
+		$priority_array = &$this->options['priority'];
+
+		// Check if it's an array and not the default value of false
+		if ( is_array ( $priority_array ) ) {
+
+			// Go through the priority array and unset any roles that don't exist
+			foreach ( $priority_array as $role_name => $priority ) {
+				if ( ! $this->role_exists( $role_name ) ) {
+					unset( $priority_array[$role_name] );
 				}
 			}
 		}
-		echo '</ul>';
+
+		// Make an array of keys that contain a list of all the roles that aren't in the
+		// priority array
+		$missing_roles = array_diff_key( (array) $this->roles, (array) $priority_array );
+
+		// Find the lowest priority in the array
+		
+		if ( is_array ( $priority_array ) ) {
+			$lowest_priority = max ( $priority_array );
+		}
+		else {
+			$lowest_priority = - 1
+			
+			;
+			$missing_roles = array_reverse( $missing_roles );
+		}
+
+		// If there are missing roles roles to be added
+		if ( ! empty( $missing_roles ) ) {
+
+			// Go through the missing roles and add the index
+			foreach ( $missing_roles as $role_key => $role_val ) {
+
+				// Add index and increment the lowest priority value to an even lower value
+				$this->add_missing_priority_index( $role_key, ++ $lowest_priority );
+			}
+		}
 	}
 
 	private function add_missing_priority_index ($role_key, $priority) {

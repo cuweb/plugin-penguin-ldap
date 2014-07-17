@@ -70,10 +70,8 @@
  * @todo 'isldap' meta data?
  * @todo get arround using suppress errors (@)? what to do when error happens?
  * @todo replace dies with throws?
- * @todo get_lowest_priority_role () causes issues the first time the plugin is run
- * - It will throw errors when there isn't a priority level set for any role AND 
- * there isn't a default role set. Currently it is defaulting to subscriber as the
- * lowest priority role.
+ * @todo roles is used often enough in penguin_settings to warrant it being an object
+ * property.
  *
  */
 
