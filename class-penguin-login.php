@@ -104,12 +104,11 @@ class Penguin_Login {
 
 			$email = $this->settings->options['email'];
 			if ( isset ( $entries[0][$email] ) ) {
-				if ( isset ( $entries[0]['userprincipalname'][0] ) ) {
-					$userID = wp_create_user( $username, wp_generate_password( ),
+				if ( isset ( $entries[0][$email][0] ) ) {
+					$userID = wp_create_user( $username, wp_generate_password(),
 						$entries[0][$email][0] );
 
 					$user_LDAP = new WP_User( $userID );
-					// $user_LDAP->set_role( 'administrator' );
 				}
 			}
 			// Need this?: return $this->error_message( "ldap_entries_error", 'Cannot find username.' );
@@ -142,7 +141,7 @@ class Penguin_Login {
 		$highest_role_priority_level = PHP_INT_MAX;
 
 		// The user doesn't belong to any groups, so they are not allowed access
-		if (  $ad_entry['memberof']['count'] === 0 ) {
+		if ( $ad_entry['memberof']['count'] === 0 ) {
 			return $this->error_message( "access_denied",
 				"You do not have permission to access this page." );
 		}
@@ -162,7 +161,7 @@ class Penguin_Login {
 					 */
 					strpos( $ad_entry['memberof'][$i], ',' ) - 3
 				);
-				//regex that should work ^CN=( [^,]+) ( get the second index of the array though)
+				//regex that should work ^CN=([^,]+) (get the second index of the array though)
 
 				/**
 				 * For all assigned LDAP groups, we need to check if the user is a
@@ -179,7 +178,7 @@ class Penguin_Login {
 					 * Wordpress settings page matches a common name for a group from
 					 * LDAP.
 					 */
-					if ( strcasecmp ( $this->settings->get_option( 'groups',$k, 0), $common_name ) === 0) {
+					if ( strcasecmp ( $this->settings->get_option( 'groups',$k, 0 ), $common_name ) === 0) {
 						if ( DEBUG ) {
 							error_log ( "Match found: $common_name".
 								".\nThis group is matched to: ".
@@ -217,7 +216,7 @@ class Penguin_Login {
 				} // End loop through all assigned roles
 			} // End loop through all LDAP groups
 
-			foreach ( $this->settings->get_option( 'priority' ) as $priorityValue) {
+			foreach ( $this->settings->get_option( 'priority' ) as $priorityValue ) {
 				if ( $priorityValue === '') {
 					$this->error_message( 'unresolved_role_conflict',
 						'There are unresolved role conflicts.');
