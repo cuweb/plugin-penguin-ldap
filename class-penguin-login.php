@@ -121,7 +121,7 @@ class Penguin_Login {
 		* Otherwise, look through what LDAP groups have been assigned to roles.
 		*/
 		if ( ! $this->settings->options['enable_group_mapping'] ) {
-			$wp_user->set_role( $this->settings->options['default_role'] );
+			$user_LDAP->set_role( $this->settings->options['default_role'] );
 		}
 		else {
 			$this->set_user_role_from_group( $user_LDAP, $entries[0] );
