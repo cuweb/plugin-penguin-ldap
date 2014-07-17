@@ -537,20 +537,8 @@ class Penguin_Settings {
 		}
 	}
 
-	public function role_exists ($role_name_that_might_exist) {
-		if ( DEBUG ) {
-			error_log ( "role_name_that_might_exist: " . $role_name_that_might_exist ,
-				0, LOG_OUTPUT_FILE );
-		}
-		foreach ($this->roles as $role_name => $role_label) {
-			if ( DEBUG ) {
-				error_log ( "role_name: " . $role_name , 0, LOG_OUTPUT_FILE );
-			}
-			if ($role_name_that_might_exist === $role_name) {
-				return true;
-			}
-		}
-		return false;
+	private function role_exists ($role_name_that_might_exist) {
+		return isset ( $this->roles[$role_name_that_might_exist] );
 	}
 
 	public function do_priority_section () {
@@ -571,18 +559,25 @@ class Penguin_Settings {
 		$lowest_priority = -1; // Actually the highest value through.
 
 		if ( $priority_array !== "") {
+			
+			
+			/**
+			 * Go through each role in the priority array and display the role if it
+			 * exists.
+			 */
+			
 			foreach ( $priority_array as $priority_level) {
 				$role = array_search( $priority_level, $priority_array );
 
 				//die ("LEVEL: " . $priority_level . " ARRAY: " . print_r ($priority_array) . " RESOLVED ROW: " . $role);
 
-				if ( isset( $this->roles[$role]) ) {
-				echo '<li><input type="text" style="display:none" name="'.
-					$this->options_roles.'[priority]['. $role .']" value="' .
-					$this->get_option('priority', $role) .
-					 '" readonly></input><label class="priority-grab">'. $this->roles[$role] .
-					 '</label></li>';
-				$lowest_priority = max( $lowest_priority, $this->get_option( 'priority', $role ) );
+				if ( $this->role_exists( $role ) ) {
+					echo '<li><input type="text" style="display:none" name="'.
+						$this->options_roles.'[priority]['. $role .']" value="' .
+						$this->get_option('priority', $role) .
+						 '" readonly></input><label class="priority-grab">'. $this->roles[$role] .
+						 '</label></li>';
+					$lowest_priority = max( $lowest_priority, $this->get_option( 'priority', $role ) );
 				}
 			}
 		}
