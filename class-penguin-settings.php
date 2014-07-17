@@ -538,7 +538,7 @@ class Penguin_Settings {
 			foreach ( $priority_array as $priority_level ) {
 				$role = array_search( $priority_level, $priority_array );
 				if ( $this->role_exists( $role ) ) {
-					echo '<li><input type="text" style="display:all" name="'.
+					echo '<li><input type="text" style="display:none" name="'.
 						$this->options_roles.'[priority]['. $role .']" value="' .
 						$this->get_option('priority', $role) .
 						 '" readonly></input><label class="priority-grab">'. $this->roles[$role] .
@@ -566,7 +566,7 @@ class Penguin_Settings {
 		// Must be a reference (&)
 		$priority_array = &$this->options['priority'];
 
-		// Check if it's an array and not the default value of false
+		// Check if it's an array
 		if ( is_array ( $priority_array ) ) {
 
 			// Go through the priority array and unset any roles that don't exist
@@ -582,14 +582,11 @@ class Penguin_Settings {
 		$missing_roles = array_diff_key( (array) $this->roles, (array) $priority_array );
 
 		// Find the lowest priority in the array
-		
 		if ( is_array ( $priority_array ) ) {
 			$lowest_priority = max ( $priority_array );
 		}
 		else {
-			$lowest_priority = - 1
-			
-			;
+			$lowest_priority = -1;
 			$missing_roles = array_reverse( $missing_roles );
 		}
 
