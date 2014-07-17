@@ -9,8 +9,6 @@ class Penguin_Login {
 
 	// Use LDAP to sign the user into wordpress
 	public function authenticate( $user, $username, $password ) {
-		$this->settings->load_all_options();
-
 		/**
 		 * Assumed this is done before this function is called:
 		 * $username = sanitize_user( $username);
@@ -21,7 +19,7 @@ class Penguin_Login {
 		if ( is_a( $user, 'WP_User') ) {
 			return $user;
 		}
-
+		
 		if ( empty( $username ) ){
 			return $this->error_message( "empty_username",
 				'The username field is empty.' );
@@ -30,6 +28,8 @@ class Penguin_Login {
 			return $this->error_message( "empty_password",
 				"The password field is empty." );
 		}
+		
+		$this->settings->load_all_options();
 
 		// Connect to LDAP
 		$this->link_identifier = ldap_connect( $this->settings->options['server'],
