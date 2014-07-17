@@ -537,7 +537,10 @@ class Penguin_Settings {
 		}
 	}
 
-	private function role_exists ($role_name_that_might_exist) {
+	private function role_exists ( $role_name_that_might_exist ) {
+		if ( ! isset( $this->roles ) ) {
+			$this->load_roles();
+		}
 		return isset ( $this->roles[$role_name_that_might_exist] );
 	}
 
@@ -547,8 +550,7 @@ class Penguin_Settings {
 		}
 
 		$priority_array = $this->get_option( 'priority' );
-
-		$priority_array = $priority_array == false ? array() : $priority_array;
+		
 		echo '<ul id="sortable">';
 
 		/**
@@ -556,21 +558,16 @@ class Penguin_Settings {
 		 * priorities. What we need to do is go through the array and print out
 		 * the keys and their corresponding values.
 		 */
-		$lowest_priority = -1; // Actually the highest value through.
+		$lowest_priority = -1; // Actually the highest value though.
 
-		if ( $priority_array !== "") {
-			
-			
+		if ( is_array ( $priority_array ) ) {
 			/**
 			 * Go through each role in the priority array and display the role if it
 			 * exists.
 			 */
 			
-			foreach ( $priority_array as $priority_level) {
+			foreach ( $priority_array as $priority_level ) {
 				$role = array_search( $priority_level, $priority_array );
-
-				//die ("LEVEL: " . $priority_level . " ARRAY: " . print_r ($priority_array) . " RESOLVED ROW: " . $role);
-
 				if ( $this->role_exists( $role ) ) {
 					echo '<li><input type="text" style="display:none" name="'.
 						$this->options_roles.'[priority]['. $role .']" value="' .
@@ -584,13 +581,13 @@ class Penguin_Settings {
 
 		/**
 		 * If these settings haven't been saved before, or a new role has been created,
-		 * then the priority array is empty. We need to look at the differences between
-		 * the list of roles and the list of roles than have been assigned priorities
-		 * using array_diff_key(). The result will give us all the roles that haven't
-		 * been assigned a priority yet. Once they have been, this only comes in handy
-		 * when new roles have been added.
+		 * then the priority array is empty or has some values that need to be set. 
+		 * We need to look at the differences between the list of roles and the list of 
+		 * roles than have been assigned priorities using array_diff_key(). The result 
+		 * will give us all the roles that haven't been assigned a priority yet. Once 
+		 * they have been, this only comes in handy when new roles have been added.
 		 */
-		$missing_roles = array_diff_key((array)$this->roles, (array) $priority_array );
+		$missing_roles = array_diff_key( (array) $this->roles, (array) $priority_array );
 
 		if ( ! empty( $missing_roles ) ) {
 			$missing_roles = array_reverse( $missing_roles );
