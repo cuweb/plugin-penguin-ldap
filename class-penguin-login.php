@@ -117,110 +117,16 @@ class Penguin_Login {
 		ldap_unbind( $this->link_identifier );
 
 		/**
-		 * If group mapping is not enabled, then assign the default role.
-		 * Otherwise, look through what LDAP groups have been assigned to roles.
-		 */
+		* If group mapping is not enabled, then assign the default role.
+		* Otherwise, look through what LDAP groups have been assigned to roles.
+		*/
 		if ( ! $this->settings->options['enable_group_mapping'] ) {
-			$user_LDAP->set_role( $this->settings->options['default_role'] );
+			$wp_user->set_role( $this->settings->options['default_role'] );
 		}
 		else {
-			$assigned_group_count = count( $this->settings->options['groups'] );
-			$highest_role_priority_level = PHP_INT_MAX;
-
-			// The user doesn't belong to any groups, so they are not allowed access
-			if (  $entries[0]['memberof']['count'] === 0 ) {
-				return $this->error_message( "access_denied",
-					"You do not have permission to access this page." );
-			}
-			else {
-				// For each group this user is a member of
-				for ( $i = 0; $i < $entries[0]['memberof']['count']; $i ++) {
-
-					// Grab the CN value for this group in the 'memberof' Array
-					$common_name = substr(
-						$entries[0]['memberof'][$i], // String to take a portion of
-						3, // Starting from this index in the string ( From AD: "CN=")
-
-						/**
-						 * Up until the first comma ( Subtract 3 because this function
-						 * grabs the substring based on starting position ( 3) and *length*
-						 * instead of starting position and end position
-						 */
-						strpos( $entries[0]['memberof'][$i], ',' ) - 3
-					);
-					//regex that should work ^CN=( [^,]+) ( get the second index of the array though)
-
-					/**
-					 * For all assigned LDAP groups, we need to check if the user is a
-					 * member of any of them. To clarify, we want to find all LDAP groups
-					 * that have an assigned role *and* the current user is a member of.
-					 */
-
-					// For all of the LDAP groups that have been assigned a WordPress role
-					for ( $k = 0; $k < $assigned_group_count; $k ++) {
-
-						/**
-						 * Check if one of the assigned groups matches a common name.
-						 * If it does, that means that the LDAP group name in the
-						 * Wordpress settings page matches a common name for a group from
-						 * LDAP.
-						 */
-						if ( strcasecmp ( $this->settings->get_option( 'groups',$k, 0), $common_name ) === 0) {
-							if ( DEBUG ) {
-								error_log ( "Match found: $common_name".
-									".\nThis group is matched to: ".
-									$this->settings->get_option( 'groups', $k , 1).
-									"The priority of this group is: ".
-									$this->settings->get_option( 'priority',
-											$this->settings->get_option( 'groups', $k, 1) ) .
-									"\nThe highest priority level found thus far is: " .
-									$highest_role_priority_level, 0,
-										LOG_OUTPUT_FILE );
-							}
-							/**
-							 * We have found an LDAP group that:
-							 *
-							 * 1) This user is a member of
-							 * 2) Has been assigned a role
-							 *
-							 * Now we continue iterating through the loop to find the highest
-							 * priority role we can find, which we will assign to the user
-							 * afterwards.
-							 *
-							 * $highest_role_priority_level is the highest priority level found
-							 * so far. We do a min( ) between the values of
-							 * $highest_role_priority_level and the current priority of what role
-							 * we are on in the iteration.
-							 *
-							 */
-
-							$highest_role_priority_level = min (
-								$this->settings->get_option( 'priority',
-									$this->settings->get_option( 'groups', $k, 1 ) ),
-								$highest_role_priority_level
-							);
-						}
-					} // End loop through all assigned roles
-				} // End loop through all LDAP groups
-
-				foreach ( $this->settings->get_option( 'priority' ) as $priorityValue) {
-					if ( $priorityValue === '') {
-						$this->error_message( 'unresolved_role_conflict',
-							'There are unresolved role conflicts.');
-					}
-				}
-
-				if ( DEBUG ) {
-					error_log ( "Setting user to role: " .
-						array_search( $highest_role_priority_level,
-						$this->settings->get_option( 'priority') ), 0,
-						LOG_OUTPUT_FILE );
-				}
-				$user_LDAP->set_role( array_search( $highest_role_priority_level,
-					$this->settings->get_option( 'priority') ), false );
-			}
+			$this->set_user_role_from_group( $user_LDAP, $entries[0] );
 		}
-
+	
 		update_user_meta( $user_LDAP->ID,
 			'first_name',
 			$entries[0][$this->settings->options['first_name']][0] );
@@ -229,6 +135,104 @@ class Penguin_Login {
 			$entries[0][$this->settings->options['last_name']][0] );
 
 		return $user_LDAP;
+	}
+
+	private function set_user_role_from_group ( $wp_user, $ad_entry ) {
+		$assigned_group_count = count( $this->settings->options['groups'] );
+		$highest_role_priority_level = PHP_INT_MAX;
+
+		// The user doesn't belong to any groups, so they are not allowed access
+		if (  $ad_entry['memberof']['count'] === 0 ) {
+			return $this->error_message( "access_denied",
+				"You do not have permission to access this page." );
+		}
+		else {
+			// For each group this user is a member of
+			for ( $i = 0; $i < $ad_entry['memberof']['count']; $i ++) {
+
+				// Grab the CN value for this group in the 'memberof' Array
+				$common_name = substr(
+					$ad_entry['memberof'][$i], // String to take a portion of
+					3, // Starting from this index in the string ( From AD: "CN=")
+
+					/**
+					 * Up until the first comma ( Subtract 3 because this function
+					 * grabs the substring based on starting position ( 3) and *length*
+					 * instead of starting position and end position
+					 */
+					strpos( $ad_entry['memberof'][$i], ',' ) - 3
+				);
+				//regex that should work ^CN=( [^,]+) ( get the second index of the array though)
+
+				/**
+				 * For all assigned LDAP groups, we need to check if the user is a
+				 * member of any of them. To clarify, we want to find all LDAP groups
+				 * that have an assigned role *and* the current user is a member of.
+				 */
+
+				// For all of the LDAP groups that have been assigned a WordPress role
+				for ( $k = 0; $k < $assigned_group_count; $k ++) {
+
+					/**
+					 * Check if one of the assigned groups matches a common name.
+					 * If it does, that means that the LDAP group name in the
+					 * Wordpress settings page matches a common name for a group from
+					 * LDAP.
+					 */
+					if ( strcasecmp ( $this->settings->get_option( 'groups',$k, 0), $common_name ) === 0) {
+						if ( DEBUG ) {
+							error_log ( "Match found: $common_name".
+								".\nThis group is matched to: ".
+								$this->settings->get_option( 'groups', $k , 1).
+								"The priority of this group is: ".
+								$this->settings->get_option( 'priority',
+										$this->settings->get_option( 'groups', $k, 1) ) .
+								"\nThe highest priority level found thus far is: " .
+								$highest_role_priority_level, 0,
+									LOG_OUTPUT_FILE );
+						}
+						/**
+						 * We have found an LDAP group that:
+						 *
+						 * 1) This user is a member of
+						 * 2) Has been assigned a role
+						 *
+						 * Now we continue iterating through the loop to find the highest
+						 * priority role we can find, which we will assign to the user
+						 * afterwards.
+						 *
+						 * $highest_role_priority_level is the highest priority level found
+						 * so far. We do a min( ) between the values of
+						 * $highest_role_priority_level and the current priority of what role
+						 * we are on in the iteration.
+						 *
+						 */
+
+						$highest_role_priority_level = min (
+							$this->settings->get_option( 'priority',
+								$this->settings->get_option( 'groups', $k, 1 ) ),
+							$highest_role_priority_level
+						);
+					}
+				} // End loop through all assigned roles
+			} // End loop through all LDAP groups
+
+			foreach ( $this->settings->get_option( 'priority' ) as $priorityValue) {
+				if ( $priorityValue === '') {
+					$this->error_message( 'unresolved_role_conflict',
+						'There are unresolved role conflicts.');
+				}
+			}
+
+			if ( DEBUG ) {
+				error_log ( "Setting user to role: " .
+					array_search( $highest_role_priority_level,
+					$this->settings->get_option( 'priority') ), 0,
+					LOG_OUTPUT_FILE );
+			}
+			$wp_user->set_role( array_search( $highest_role_priority_level,
+				$this->settings->get_option( 'priority') ), false );
+		}		
 	}
 
 	// Returns a formatted error message and unbinds
