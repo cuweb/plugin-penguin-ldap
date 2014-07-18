@@ -14,10 +14,10 @@
  * ---------------------
  *
  * The purpose of this plugin is to allow users to sign into their WordPress
- * website's backend using LDAP (Lightweight Directory Access Protocol). A
- * probable use for this plugin would be to provide a "single sign on"
- * functionality. This means that users can use the same singular username
- * and password combination that use for other services.
+ * website's backend using LDAP (Lightweight Directory Access Protocol) with 
+ * active directory. A probable use for this plugin would be to provide a "single sign on"
+ * functionality. This means that users can use the same singular username and password
+ * combination that use for other services.
  *
  *
  * How the plugin works (High level explanation):
@@ -59,11 +59,6 @@
  * -------------
  * @todo separation of loading tabs ( i.e. not loading all options when on one tab)
  *
- * Urgent:
- * ------
- * @todo handle role deletion for default role, mapped role and role priorities.
- * -UPDATE: Appears to work, might need more testing
- *
  * Other:
  * -------
  * @todo make sure environment works in multiple places
@@ -98,10 +93,11 @@ $penguin_settings = new Penguin_Settings();
 $penguin_menu = new Penguin_Menu($penguin_settings);
 
 /**
- * Handles LDAP login functionality stuff
+ * Handles AD-LDAP login functionality
  */
 $penguin_login = new Penguin_Login($penguin_settings);
 
+// True for now, but might want to make a setting?
 $penguin_authentication = true;
 
 if ( $penguin_authentication ) {

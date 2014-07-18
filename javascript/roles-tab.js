@@ -1,7 +1,5 @@
 var j$ = jQuery.noConflict();
 
-// uses values: table, enable, del-all, add-row, del-row
-
 function DynamicTable(options) {
 	// From options object
 	this.attr = options.attr;
@@ -193,13 +191,8 @@ DynamicTable.prototype.deleteRow = function(rowIndex, override) {
 		if (scope.amountOfRows() === 1) {
 
 			/**
-			 * If the user the deletes the last row, this will uncheck the 'Enable row mappings'
-			 * option and collapses the row mappings section.
-			 * (because the user is not ultilzing any).
+			 * If the user the deletes the last row. Not doing anything so far.
 			 */
-
-			
-			
 		}
 
 		j$(this).remove();
@@ -247,10 +240,7 @@ DynamicTable.prototype.amountOfRows = function() {
 	return this.table.rows.length - 1; // -1 is to account for table header row
 };
 
-/**
- * @todo load basic table row with buttons all here, and find out a way to populate the
- * list using javascript
- */
+
 j$(document).ready(function () {
 	
 	var $tableSection = j$('.form-table').find('tr').eq(3);

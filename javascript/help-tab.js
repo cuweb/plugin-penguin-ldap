@@ -4,8 +4,7 @@ j$(document).ready(function () {
 	j$("#test-button").click(function() {
 	
 		var data = {
-			'action': 'my_action',
-			'whatever': 1234
+			'action': 'my_action'
 		};
 		// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
 		j$.post(ajaxurl, data, function (res, err) {

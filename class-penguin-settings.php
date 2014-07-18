@@ -3,11 +3,13 @@
 class Penguin_Settings {
 
 	public $options;
-	private $options_general, $options_roles, $roles, $options_set;
+	private $options_general, $options_roles, $options_set, $roles, $prefix;
 
 	public function __construct() {
-		$this->options_general = "pgn_general";
-		$this->options_roles = "pgn_roles";
+		$this->prefix = "pgn";
+		
+		$this->options_general = $this->prefix . "_general";
+		$this->options_roles = $this->prefix . "_roles";
 	}
 
 	public function load_all_options () {
@@ -21,7 +23,7 @@ class Penguin_Settings {
 	public function load_options( $key ) {
 		$options = (array) get_option ( $this->prefix . $key );
 
-		if ( ! empty( $this->options) ) {
+		if ( ! empty( $this->options ) ) {
 			$this->options = array_merge ($this->options, $options);
 		}
 		else {
@@ -349,11 +351,18 @@ class Penguin_Settings {
 	}
 
 	public function general_section_desc () {
-		echo "Configure Basic LDAP settings.";
+		echo "<p>Configure Basic LDAP settings.</p>";
 	}
 
 	public function roles_section_desc () {
-		echo "Map LDAP groups to WordPress roles.";
+		echo "<p>Map LDAP groups to WordPress roles.</p>";
+	}
+	
+	public function opt_str ( $key1, $key2 = null, $key3 = null) {
+		$s = $key1;
+		if ( isset( $key2 ) ) $s .= '[' . $key2 . ']';
+		if ( isset( $key3 ) ) $e .= '[' . $key3 . ']';
+		return $s;
 	}
 
 	public function do_dropdown ( $args ) {
@@ -387,31 +396,17 @@ class Penguin_Settings {
 		die ("argument missing at $index in function $func_name");
 	}
 
-	public function opt_str ( $key1, $key2 = null, $key3 = null) {
-		$s = $key1;
-		if ( isset( $key2 ) ) $s .= '[' . $key2 . ']';
-		if ( isset( $key3 ) ) $e .= '[' . $key3 . ']';
-		return $s;
-	}
-
 	public function do_general_field_row ( $args ) {
-		echo '<input type="text" id="ld-'.$args[0].'" name="'.$this->options_general.'['.$args[0].']" value="' .
-			//$this->get_option($args[0], null, null, $default ) . '"/></td>';
+		echo '<input type="text" ' /*id="ld-'.$args[0].*/ . '" name="' . $this->opt_str( $this->options_general, $args[0] ) .']" value="' .
 			$this->get_option($args[0]) . '"/></td>';
 	}
 
 	public function field_default_role () {
 		?>
-			<select id="default-group" name="pgn_roles[default_role]">
+			<select id="default-group" name="<?php echo $this->opt_str($this->options_roles, 'default_role'); ?>">
 			<?php wp_dropdown_roles( $this->options['default_role'] );?>
 			</select>
 		<?php
-	}
-
-	public function do_checkbox ( $args ) {
-		$section = $args[0];
-		$key = $args[1];
-		$value = $this->get_option($key[1]);
 	}
 
 	public function do_enable_mapping_checkbox () {
@@ -426,7 +421,7 @@ class Penguin_Settings {
 			$this->load_roles();
 		}
 
-		if ( $key[0] != 'groups') return;
+		if ( $key[0] != 'groups' ) return;
 
 		$group_mapping_options = array (
 			'idPrefix' => 'grpmp-',
@@ -586,7 +581,7 @@ class Penguin_Settings {
 			$lowest_priority = max ( $priority_array );
 		}
 		else {
-			$lowest_priority = -1;
+			$lowest_priority = 0;
 			$missing_roles = array_reverse( $missing_roles );
 		}
 
@@ -597,7 +592,7 @@ class Penguin_Settings {
 			foreach ( $missing_roles as $role_key => $role_val ) {
 
 				// Add index and increment the lowest priority value to an even lower value
-				$this->add_missing_priority_index( $role_key, ++ $lowest_priority );
+				$this->add_missing_priority_index( $role_key, $lowest_priority ++);
 			}
 		}
 	}
