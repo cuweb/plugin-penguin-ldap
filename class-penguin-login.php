@@ -24,6 +24,7 @@ class Penguin_Login {
 			return $this->error_message( "empty_username",
 				'The username field is empty.' );
 		}
+		
 		if ( empty( $password ) ){
 			return $this->error_message( "empty_password",
 				"The password field is empty." );
@@ -53,7 +54,7 @@ class Penguin_Login {
 
 		if ( ! $opt_ref_result ) {
 			return $this->error_message( "set_option_opt_ref_fail",
-				"Could not set opt referrals");
+				"Could not set opt referrals" );
 		}
 
 		$this->bind = @ldap_bind( $this->link_identifier,
@@ -178,14 +179,14 @@ class Penguin_Login {
 					 * Wordpress settings page matches a common name for a group from
 					 * LDAP.
 					 */
-					if ( strcasecmp ( $this->settings->get_option( 'groups',$k, 0 ), $common_name ) === 0) {
+					if ( strcasecmp ( $this->settings->get_option( 'groups', $k, 0 ), $common_name ) === 0) {
 						if ( DEBUG ) {
 							error_log ( "Match found: $common_name".
 								".\nThis group is matched to: ".
-								$this->settings->get_option( 'groups', $k , 1).
+								$this->settings->get_option( 'groups', $k , 1 ).
 								"The priority of this group is: ".
 								$this->settings->get_option( 'priority',
-										$this->settings->get_option( 'groups', $k, 1) ) .
+										$this->settings->get_option( 'groups', $k, 1 ) ) .
 								"\nThe highest priority level found thus far is: " .
 								$highest_role_priority_level, 0,
 									LOG_OUTPUT_FILE );
@@ -206,7 +207,6 @@ class Penguin_Login {
 						 * we are on in the iteration.
 						 *
 						 */
-
 						$highest_role_priority_level = min (
 							$this->settings->get_option( 'priority',
 								$this->settings->get_option( 'groups', $k, 1 ) ),
@@ -217,9 +217,9 @@ class Penguin_Login {
 			} // End loop through all LDAP groups
 
 			foreach ( $this->settings->get_option( 'priority' ) as $priorityValue ) {
-				if ( $priorityValue === '') {
+				if ( $priorityValue === '' ) {
 					$this->error_message( 'unresolved_role_conflict',
-						'There are unresolved role conflicts.');
+						'There are unresolved role conflicts.' );
 				}
 			}
 
@@ -230,8 +230,8 @@ class Penguin_Login {
 					LOG_OUTPUT_FILE );
 			}
 			$wp_user->set_role( array_search( $highest_role_priority_level,
-				$this->settings->get_option( 'priority') ), false );
-		}		
+				$this->settings->get_option( 'priority' ) ), false );
+		}
 	}
 
 	// Returns a formatted error message and unbinds

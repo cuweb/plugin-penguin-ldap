@@ -392,18 +392,20 @@ class Penguin_Settings {
 		echo '</select>';
 	}
 
-	public function arg_error ( $func_name, $index ) {
+	private function arg_error ( $func_name, $index ) {
 		die ("argument missing at $index in function $func_name");
 	}
 
 	public function do_general_field_row ( $args ) {
 		echo '<input type="text" ' /*id="ld-'.$args[0].*/ . '" name="' . $this->opt_str( $this->options_general, $args[0] ) .'" value="' .
-			$this->get_option($args[0]) . '"/></td>';
+			$this->get_option( $args[0] ) . '"/></td>';
 	}
 
 	public function field_default_role () {
 		?>
-			<select id="default-group" name="<?php echo $this->opt_str($this->options_roles, 'default_role'); ?>">
+			<select id="default-group" name="<?php 
+			echo $this->opt_str( $this->options_roles, 'default_role' ); 
+			?>">
 			<?php wp_dropdown_roles( $this->options['default_role'] );?>
 			</select>
 		<?php
@@ -529,7 +531,6 @@ class Penguin_Settings {
 			 * Go through each role in the priority array and display the role if it
 			 * exists.
 			 */
-
 			foreach ( $priority_array as $priority_level ) {
 				$role = array_search( $priority_level, $priority_array );
 				if ( $this->role_exists( $role ) ) {
@@ -542,7 +543,6 @@ class Penguin_Settings {
 				}
 			}
 		}
-
 		echo '</ul>';
 	}
 
