@@ -397,7 +397,7 @@ class Penguin_Settings {
 	}
 
 	public function do_general_field_row ( $args ) {
-		echo '<input type="text" ' /*id="ld-'.$args[0].*/ . '" name="' . $this->opt_str( $this->options_general, $args[0] ) .']" value="' .
+		echo '<input type="text" ' /*id="ld-'.$args[0].*/ . '" name="' . $this->opt_str( $this->options_general, $args[0] ) .'" value="' .
 			$this->get_option($args[0]) . '"/></td>';
 	}
 
