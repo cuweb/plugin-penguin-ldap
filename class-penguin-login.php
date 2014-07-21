@@ -33,7 +33,7 @@ class Penguin_Login {
 		$this->settings->load_all_options();
 
 		// Connect to LDAP
-		$this->link_identifier = ldap_connect( $this->settings->options['server'],
+		$this->link_identifier = @ldap_connect( $this->settings->options['server'],
 			$this->settings->options['port'] );
 
 		if ( ! $this->link_identifier ) {
@@ -41,7 +41,7 @@ class Penguin_Login {
 		}
 
 		//Set LDAP options
-		$protocol_result = ldap_set_option( $this->link_identifier, LDAP_OPT_PROTOCOL_VERSION,
+		$protocol_result = @ldap_set_option( $this->link_identifier, LDAP_OPT_PROTOCOL_VERSION,
 			$this->settings->options['protocol_version'] );
 
 		if ( ! $protocol_result ) {
@@ -49,7 +49,7 @@ class Penguin_Login {
 				"Could not set protocol");
 		}
 
-		$opt_ref_result = ldap_set_option( $this->link_identifier, LDAP_OPT_REFERRALS,
+		$opt_ref_result = @ldap_set_option( $this->link_identifier, LDAP_OPT_REFERRALS,
 			$this->settings->options['referrals'] );
 
 		if ( ! $opt_ref_result ) {
@@ -77,7 +77,7 @@ class Penguin_Login {
 
 		$result_identifier = @ldap_search( $this->link_identifier,
 			$this->settings->options['dn'],
-			"( &$object_class_string(" . $this->settings->options['login_field'] . "=" . $username . "))" );
+			"(&$object_class_string(" . $this->settings->options['login_field'] . "=" . $username . "))" );
 
 		if ( ! $result_identifier ) {
 			do_action( 'wp_login_failed', $username );
@@ -127,6 +127,7 @@ class Penguin_Login {
 			$this->set_user_role_from_group( $user_LDAP, $entries[0] );
 		}
 	
+		// Update the user's first and last name according to the settings
 		update_user_meta( $user_LDAP->ID,
 			'first_name',
 			$entries[0][$this->settings->options['first_name']][0] );

@@ -76,12 +76,12 @@
 		<?php
 		if ( $active_tab == "general" ) {
 			// Very important!
-			$this->penguin_settings->load_all_options( );
+			$this->penguin_settings->load_all_options();
 			?>
 			<div id="wrap">
 				<form method="POST" action="options.php">
 					<?php
-					$this->test_ldap_connect_button( );
+					$this->test_ldap_connect_button();
 					settings_fields( "pgn_general");
 					do_settings_sections( "pgn_general");
 					//do_settings_fields( "penguin_options", "penguin_general_section" );
@@ -94,7 +94,7 @@
 		}
 		else if ( $active_tab == "roles" ) {
 			// Very important!
-			$this->penguin_settings->load_all_options( );
+			$this->penguin_settings->load_all_options();
 			wp_enqueue_script( 'roles_tab_script' ,
 				plugin_dir_url( __FILE__ ) . 'javascript/roles-tab.js');
 			wp_enqueue_script('jquery-ui-sortable');
@@ -114,7 +114,7 @@
 			<?php
 		}
 		else if ( $active_tab == "help" ) {
-			$this->test_ldap_connect_button( );
+			$this->test_ldap_connect_button();
 
 			echo "<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>";
 		}
@@ -133,16 +133,16 @@
 			<?php
 	}
 
-	public function add_ajax_script () {
+	public function add_ajax_script() {
 		add_action ( 'wp_ajax_my_action', array ( $this, "my_action_callback" ) );
 	}
 
 	public function my_action_callback() {
-		$this->penguin_settings->load_all_options( );
+		$this->penguin_settings->load_all_options();
 
 		$result;
 
-			$result = @ldap_connect( $this->penguin_settings->get_option( 'server'),
+			$result = @ldap_connect( $this->penguin_settings->get_option( 'server' ),
 			$this->penguin_settings->get_option( 'port') );
 
 		if ( $result != false) {
@@ -152,7 +152,7 @@
 			echo "Could not connect.";
 		}
 
-		die( ); // this is required to return a proper result
+		die(); // this is required to return a proper result
 	}
 }
 ?>

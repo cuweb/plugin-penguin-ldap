@@ -3,20 +3,20 @@
 class Penguin_Settings {
 
 	public $options;
-	private $options_general, $options_roles, $options_set, $roles, $prefix;
+	private $option_key_general, $option_general, $option_key_role, $option_role,
+		$options_set, $roles, $prefix;
 
 	public function __construct() {
 		$this->prefix = "pgn";
-		
-		$this->options_general = $this->prefix . "_general";
-		$this->options_roles = $this->prefix . "_roles";
+		$this->option_key_general = $this->prefix . "_general";
+		$this->option_key_role = $this->prefix . "_roles";
 	}
 
 	public function load_all_options () {
-		$options_general = (array) get_option ( $this->options_general );
-		$options_roles = (array) get_option ( $this->options_roles );
+		$this->option_general = (array) get_option ( $this->option_key_general );
+		$this->option_role = (array) get_option ( $this->option_key_role );
 
-		$this->options = array_merge ( $options_general, $options_roles);
+		$this->options = array_merge ( $this->option_general, $this->option_role);
 		$this->give_values_if_not_set();
 	}
 
@@ -101,13 +101,15 @@ class Penguin_Settings {
 	}
 
 	private function give_value_if_not_set ( $default_value, $option_index ) {
-		$this->options[$option_index] = $this->get_option_temp($default_value, $option_index);
+		$this->options[$option_index] = $this->get_option($option_index, null, null, $default_value);
 	}
 
-	public function get_option_temp ( $default = "", $option_index, $sub1 = null, $sub2 = null) {
+	public function get_option ( $option_index, $sub1 = null, $sub2 = null, $default = "" ) {
 		if ( isset ( $this->options ) ) {
 			if ( isset ( $this->options[$option_index] ) ) {
 				if ( is_null( $sub1 ) ) {
+
+					
 					return $this->options[$option_index];
 				}
 				elseif (isset ( $this->options[$option_index][$sub1] ) ) {
@@ -134,10 +136,6 @@ class Penguin_Settings {
 		}
 	}
 
-	public function get_option ( $option_index, $sub1 = null, $sub2 = null, $default = null) {
-		return $this->get_option_temp ( $default, $option_index, $sub1, $sub2);
-	}
-
 	public function add_settings () {
 		// ---------------------------------------------------------------------
 		// GENERAL SECTION
@@ -146,14 +144,14 @@ class Penguin_Settings {
 			'penguin_general_section', // ID
 			'Penguin General Section', // Title
 			array ($this, 'general_section_desc'), // Callback function
-			$this->options_general // Menu page (should match a menu slug)
+			$this->option_key_general // Menu page (should match a menu slug)
 		);
 
 		add_settings_field(
 			'pgn_server', // ID
 			'Server', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'server' )
 		);
@@ -162,7 +160,7 @@ class Penguin_Settings {
 			'pgn_port', // ID
 			'Port', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'port' )
 		);
@@ -171,7 +169,7 @@ class Penguin_Settings {
 			'pgn_extension', // ID
 			'Extension', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'extension' )
 		);
@@ -180,7 +178,7 @@ class Penguin_Settings {
 			'pgn_protocol', // ID
 			'Protocol', // Title
 			array ($this, 'do_dropdown') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'protocol', array( 'ldap://', 'ldaps://' ) )
 		);
@@ -189,7 +187,7 @@ class Penguin_Settings {
 			'pgn_referrals', // ID
 			'Referrals', // Title
 			array ($this, 'do_dropdown') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'referrals', array (0, 1) )
 		);
@@ -198,7 +196,7 @@ class Penguin_Settings {
 			'pgn_protocol_version', // ID
 			'Protocol Version', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'protocol_version' )
 		);
@@ -207,7 +205,7 @@ class Penguin_Settings {
 			'pgn_user', // ID
 			'User', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'user' )
 		);
@@ -216,7 +214,7 @@ class Penguin_Settings {
 			'pgn_password', // ID
 			'Password', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'password' )
 		);
@@ -225,7 +223,7 @@ class Penguin_Settings {
 			'pgn_dn', // ID
 			'DN', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'dn' )
 		);
@@ -234,7 +232,7 @@ class Penguin_Settings {
 			'pgn_login_field', // ID
 			'Login Field', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'login_field' )
 		);
@@ -243,7 +241,7 @@ class Penguin_Settings {
 			'pgn_filter', // ID
 			'Filter', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'filter' )
 		);
@@ -252,7 +250,7 @@ class Penguin_Settings {
 			'pgn_display_name', // ID
 			'Display Name', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'display_name' )
 		);
@@ -261,7 +259,7 @@ class Penguin_Settings {
 			'pgn_email', // ID
 			'Email', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'email' )
 		);
@@ -270,7 +268,7 @@ class Penguin_Settings {
 			'pgn_first_name', // ID
 			'First Name', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'first_name' )
 		);
@@ -279,7 +277,7 @@ class Penguin_Settings {
 			'pgn_last_name', // ID
 			'Last Name', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'last_name' )
 		);
@@ -288,14 +286,14 @@ class Penguin_Settings {
 			'pgn_objectclass', // ID
 			'Objectclass', // Title
 			array ($this, 'do_general_field_row') , // Callback function
-			$this->options_general, // Menu page (should match a menu slug)
+			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'objectclass' )
 		);
 
 		register_setting(
-			$this->options_general, // Options group
-			$this->options_general  // Name of the option
+			$this->option_key_general, // Options group
+			$this->option_key_general  // Name of the option
 		);
 
 		// ---------------------------------------------------------------------
@@ -305,14 +303,14 @@ class Penguin_Settings {
 			'penguin_roles_section', // ID
 			'Penguin Roles Section', // Title
 			array ($this, 'roles_section_desc'), // Callback function
-			$this->options_roles // Menu page (should match a menu slug)
+			$this->option_key_role // Menu page (should match a menu slug)
 		);
 
 		add_settings_field(
 			'penguin_priority',
 			'Penguin Priority',
 			array ($this, 'do_priority_section'),
-			$this->options_roles,
+			$this->option_key_role,
 			'penguin_roles_section'
 		);
 
@@ -320,7 +318,7 @@ class Penguin_Settings {
 			'penguin_default_role', // ID
 			'Default Role', // Title
 			array ($this, 'field_default_role') , // Callback function
-			$this->options_roles, // Menu page (should match a menu slug)
+			$this->option_key_role, // Menu page (should match a menu slug)
 			'penguin_roles_section' // Setting section this field belongs to
 		);
 
@@ -328,7 +326,7 @@ class Penguin_Settings {
 			'penguin_enable_mapping', // ID
 			'Enable group mapping', // Title
 			array ($this, 'do_enable_mapping_checkbox') , // Callback function
-			$this->options_roles, // Menu page (should match a menu slug)
+			$this->option_key_role, // Menu page (should match a menu slug)
 			'penguin_roles_section' // Setting section this field belongs to
 		);
 
@@ -336,14 +334,14 @@ class Penguin_Settings {
 			'penguin_groups', // ID
 			'Group Mapping', // Title
 			array ($this, 'do_mapping_section') , // Callback function
-			$this->options_roles, // Menu page (should match a menu slug)
+			$this->option_key_role, // Menu page (should match a menu slug)
 			'penguin_roles_section', // Setting section this field belongs to
 			array ( 'groups' )
 		);
 
 		register_setting(
-			$this->options_roles, // Options group
-			$this->options_roles  // Name of the option
+			$this->option_key_role, // Options group
+			$this->option_key_role  // Name of the option
 		);
 	}
 
@@ -378,7 +376,7 @@ class Penguin_Settings {
 
 		$options_length = count ($options);
 
-		echo '<select name="' . $this->opt_str( $this->options_general, $key ) . '">';
+		echo '<select name="' . $this->opt_str( $this->option_key_general, $key ) . '">';
 		$value = $this->options[$key];
 		for ($i = 0; $i < $options_length; $i ++) {
 			if ($options[$i] == $value) {
@@ -397,14 +395,14 @@ class Penguin_Settings {
 	}
 
 	public function do_general_field_row ( $args ) {
-		echo '<input type="text" ' /*id="ld-'.$args[0].*/ . '" name="' . $this->opt_str( $this->options_general, $args[0] ) .'" value="' .
+		echo '<input type="text" ' /*id="ld-'.$args[0].*/ . '" name="' . $this->opt_str( $this->option_key_general, $args[0] ) .'" value="' .
 			$this->get_option( $args[0] ) . '"/></td>';
 	}
 
 	public function field_default_role () {
 		?>
 			<select id="default-group" name="<?php 
-			echo $this->opt_str( $this->options_roles, 'default_role' ); 
+			echo $this->opt_str( $this->option_key_general, 'default_role' ); 
 			?>">
 			<?php wp_dropdown_roles( $this->options['default_role'] );?>
 			</select>
@@ -535,7 +533,7 @@ class Penguin_Settings {
 				$role = array_search( $priority_level, $priority_array );
 				if ( $this->role_exists( $role ) ) {
 					echo '<li><input type="text" style="display:none" name="'.
-						$this->options_roles.'[priority]['. $role .']" value="' .
+						$this->option_key_general.'[priority]['. $role .']" value="' .
 						$this->get_option('priority', $role) .
 						 '" readonly></input><label class="priority-grab">'. $this->roles[$role] .
 						 '</label></li>';
