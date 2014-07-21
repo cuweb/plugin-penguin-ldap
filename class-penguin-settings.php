@@ -3,20 +3,20 @@
 class Penguin_Settings {
 
 	public $options;
-	private $option_key_general, $option_general, $option_key_role, $option_role,
+	private $option_key_general, $option_general, $option_key_roles, $option_roless,
 		$options_set, $roles, $prefix;
 
 	public function __construct() {
 		$this->prefix = "pgn";
 		$this->option_key_general = $this->prefix . "_general";
-		$this->option_key_role = $this->prefix . "_roles";
+		$this->option_key_roles = $this->prefix . "_roles";
 	}
 
 	public function load_all_options () {
 		$this->option_general = (array) get_option ( $this->option_key_general );
-		$this->option_role = (array) get_option ( $this->option_key_role );
+		$this->option_roles = (array) get_option ( $this->option_key_roles );
 
-		$this->options = array_merge ( $this->option_general, $this->option_role);
+		$this->options = array_merge ( $this->option_general, $this->option_roles);
 		$this->give_values_if_not_set();
 	}
 
@@ -303,14 +303,14 @@ class Penguin_Settings {
 			'penguin_roles_section', // ID
 			'Penguin Roles Section', // Title
 			array ($this, 'roles_section_desc'), // Callback function
-			$this->option_key_role // Menu page (should match a menu slug)
+			$this->option_key_roles // Menu page (should match a menu slug)
 		);
 
 		add_settings_field(
 			'penguin_priority',
 			'Penguin Priority',
 			array ($this, 'do_priority_section'),
-			$this->option_key_role,
+			$this->option_key_roles,
 			'penguin_roles_section'
 		);
 
@@ -318,7 +318,7 @@ class Penguin_Settings {
 			'penguin_default_role', // ID
 			'Default Role', // Title
 			array ($this, 'field_default_role') , // Callback function
-			$this->option_key_role, // Menu page (should match a menu slug)
+			$this->option_key_roles, // Menu page (should match a menu slug)
 			'penguin_roles_section' // Setting section this field belongs to
 		);
 
@@ -326,7 +326,7 @@ class Penguin_Settings {
 			'penguin_enable_mapping', // ID
 			'Enable group mapping', // Title
 			array ($this, 'do_enable_mapping_checkbox') , // Callback function
-			$this->option_key_role, // Menu page (should match a menu slug)
+			$this->option_key_roles, // Menu page (should match a menu slug)
 			'penguin_roles_section' // Setting section this field belongs to
 		);
 
@@ -334,14 +334,14 @@ class Penguin_Settings {
 			'penguin_groups', // ID
 			'Group Mapping', // Title
 			array ($this, 'do_mapping_section') , // Callback function
-			$this->option_key_role, // Menu page (should match a menu slug)
+			$this->option_key_roles, // Menu page (should match a menu slug)
 			'penguin_roles_section', // Setting section this field belongs to
 			array ( 'groups' )
 		);
 
 		register_setting(
-			$this->option_key_role, // Options group
-			$this->option_key_role  // Name of the option
+			$this->option_key_roles, // Options group
+			$this->option_key_roles  // Name of the option
 		);
 	}
 
