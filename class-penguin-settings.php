@@ -357,7 +357,7 @@ class Penguin_Settings {
 	public function opt_str ( $key1, $key2 = null, $key3 = null) {
 		$s = $key1;
 		if ( isset( $key2 ) ) $s .= '[' . $key2 . ']';
-		if ( isset( $key3 ) ) $e .= '[' . $key3 . ']';
+		if ( isset( $key3 ) ) $s .= '[' . $key3 . ']';
 		return $s;
 	}
 
