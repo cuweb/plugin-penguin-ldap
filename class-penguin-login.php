@@ -105,6 +105,16 @@ class Penguin_Login {
 					'Cannot find username.' );
 			}
 		}
+		
+		// Get the email attribute from this AD entry
+		$email = $this->get_ldap_user_attribute( $options['email'], $entry );
+		
+		if ( is_wp_error ( $email ) ) {
+			return $email;
+		}
+		if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
+			return $this->error_message('ldap_invalid_email', 'LDAP Error.');
+		}
 
 		/**
 		 * If the user exists we want to get their user object, and give them a new 
@@ -128,17 +138,6 @@ class Penguin_Login {
 		 * If the user doesn't exist we want to create a new WordPress user
 		 */
 		else {
-			
-			// Get the email attribute from this AD entry
-			$email = $this->get_ldap_user_attribute( $options['email'], $entry );
-			
-			if ( is_wp_error ( $email ) ) {
-				return $email;
-			}
-			elseif ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
-				return $this->error_message('ldap_invalid_email', 'LDAP Error.');
-			}
-			
 			// Generate a new user ID
 			$user_id = wp_create_user( $username, wp_generate_password(),
 				$email );
@@ -190,7 +189,10 @@ class Penguin_Login {
 			return $last_name;
 		}	
 		update_user_meta( $user_LDAP->ID, 'last_name', $last_name );
-
+		
+		// $email has already been checked for errors previously
+		update_user_meta( $user_LDAP->ID, 'user_email', $email );
+		
 		return $user_LDAP;
 	}
 
