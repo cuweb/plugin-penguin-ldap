@@ -68,7 +68,7 @@ class Penguin_Login {
 
 		if ( ! $this->bind ) {
 			//do_action( 'wp_login_failed', $username );
-			return $this->error_message( "bind_fail", 'Invalid credentials: ' . $ldapPrefix . $username);
+			return $this->error_message( "bind_fail", 'Invalid credentials.');
 		}
 
 		// True if the user exists, false otherwise
