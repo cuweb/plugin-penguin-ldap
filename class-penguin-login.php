@@ -108,7 +108,6 @@ class Penguin_Login {
 				if ( isset ( $entries[0][$email][0] ) ) {
 					$userID = wp_create_user( $username, wp_generate_password(),
 						$entries[0][$email][0] );
-
 					$user_LDAP = new WP_User( $userID );
 				}
 			}

@@ -3,7 +3,7 @@
 class Penguin_Settings {
 
 	public $options;
-	private $option_key_general, $option_general, $option_key_roles, $option_roless,
+	private $option_key_general, $option_general, $option_key_roles, $option_roles,
 		$options_set, $roles, $prefix;
 
 	public function __construct() {
@@ -108,8 +108,6 @@ class Penguin_Settings {
 		if ( isset ( $this->options ) ) {
 			if ( isset ( $this->options[$option_index] ) ) {
 				if ( is_null( $sub1 ) ) {
-
-					
 					return $this->options[$option_index];
 				}
 				elseif (isset ( $this->options[$option_index][$sub1] ) ) {
