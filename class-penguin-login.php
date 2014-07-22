@@ -132,6 +132,13 @@ class Penguin_Login {
 			// Get the email attribute from this AD entry
 			$email = $this->get_ldap_user_attribute( $options['email'], $entry );
 			
+			if ( is_wp_error ( $email ) ) {
+				return $email;
+			}
+			elseif ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
+				return $this->error_message('ldap_invalid_email', 'LDAP Error.');
+			}
+			
 			// Generate a new user ID
 			$user_id = wp_create_user( $username, wp_generate_password(),
 				$email );
@@ -169,11 +176,19 @@ class Penguin_Login {
 		 */
 		$first_name = $this->get_ldap_user_attribute( $options['first_name'],
 			$entry);
+			
+		if ( is_wp_error( $first_name ) ) {
+			return $first_name;
+		}
 	
 		update_user_meta( $user_LDAP->ID, 'first_name', $first_name );
 		
 		$last_name = $this->get_ldap_user_attribute( $options['last_name'], 
 			$entry);
+			
+		if ( is_wp_error( $last_name ) ) {
+			return $last_name;
+		}	
 		update_user_meta( $user_LDAP->ID, 'last_name', $last_name );
 
 		return $user_LDAP;
@@ -186,7 +201,7 @@ class Penguin_Login {
 			}
 		}
 		else {
-			return "";
+			return $this->error_message('ldap_' . $attribute . '_undefined.', 'LDAP Error code: 3');
 			// Handle error here.
 		}
 	}
