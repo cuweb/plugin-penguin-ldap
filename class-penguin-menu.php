@@ -17,7 +17,6 @@
 	}
 	// The menu
 	public function penguin_menu () {
-
 		?>
 		<style>
 			hr {
@@ -70,6 +69,10 @@
 
 			<a href="<?php echo add_query_arg( array('tab' => 'help'), $_SERVER['REQUEST_URI']); ?>" class="nav-tab
 			<?php echo $active_tab == 'help' ? 'nav-tab-active' : ''; ?>">Help</a>
+			
+			<a href="<?php echo add_query_arg( array('tab' => 'error_codes'), $_SERVER['REQUEST_URI']); ?>" class="nav-tab
+			<?php echo $active_tab == 'error_codes' ? 'nav-tab-active' : ''; ?>">Error Codes</a>
+			
 			</h2>
 		</div>
 
@@ -92,7 +95,7 @@
 
 			<?php
 		}
-		else if ( $active_tab == "roles" ) {
+		elseif ( $active_tab == "roles" ) {
 			// Very important!
 			$this->penguin_settings->load_all_options();
 			wp_enqueue_script( 'roles_tab_script' ,
@@ -113,10 +116,40 @@
 
 			<?php
 		}
-		else if ( $active_tab == "help" ) {
+		elseif ( $active_tab == "help" ) {
 			$this->test_ldap_connect_button();
 
 			echo "<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>";
+		}
+		else if ( $active_tab = "error_codes" ) {
+			?>
+			<table>
+				<tr>
+					<th>
+						ID
+					</th>
+					<th>
+						Error Type
+					</th>
+					<th>
+						Description
+					</th>
+				</tr>
+				<tr>
+					<td>
+						01
+					</td>
+					<td>
+						Cannot connect
+					</td>
+					<td>
+						When Lorem ipsum dolor sit amet
+					</td>
+				</tr>
+				
+			</table>
+			
+			<?php
 		}
 	}
 
