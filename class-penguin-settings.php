@@ -38,6 +38,9 @@ class Penguin_Settings {
 		$this->give_value_if_not_set ( '389',
 			'port' );
 
+		$this->give_value_if_not_set ( 'company\\',
+			'prefix' );
+			
 		$this->give_value_if_not_set ( '@example.com',
 			'extension' );
 
@@ -163,6 +166,15 @@ class Penguin_Settings {
 			array ( 'port' )
 		);
 
+		add_settings_field(
+			'pgn_prefix', // ID
+			'Prefix', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'prefix' )
+		);
+		
 		add_settings_field(
 			'pgn_extension', // ID
 			'Extension', // Title

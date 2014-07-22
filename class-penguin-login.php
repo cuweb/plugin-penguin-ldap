@@ -57,12 +57,18 @@ class Penguin_Login {
 				"Could not set opt referrals" );
 		}
 
+		$ldapPrefix = "";
+		if($this->settings->options['prefix']) {
+			$ldapPrefix = $this->settings->options['prefix'];
+			//$ldapPrefix = $this->settings->options['prefix'] . "\\";
+		} 
+		
 		$this->bind = @ldap_bind( $this->link_identifier,
-			$username . $this->settings->options['extension'], $password );
+			$ldapPrefix . $username . $this->settings->options['extension'], $password );
 
 		if ( ! $this->bind ) {
 			//do_action( 'wp_login_failed', $username );
-			return $this->error_message( "bind_fail", 'Invalid credentials.' );
+			return $this->error_message( "bind_fail", 'Invalid credentials: ' . $ldapPrefix . $username);
 		}
 
 		// True if the user exists, false otherwise
