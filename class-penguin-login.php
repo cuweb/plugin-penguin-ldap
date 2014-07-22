@@ -111,7 +111,7 @@ class Penguin_Login {
 					
 					if ( is_wp_error ( $userID ) ) {
 						$err_code = $userID->get_error_code();
-						return $this->error_message($err_code, get_error_message( $err_code ) );
+						return $this->error_message($err_code, $userID->get_error_message( $err_code ) );
 					}
 					$user_LDAP = new WP_User( $userID );
 				}
