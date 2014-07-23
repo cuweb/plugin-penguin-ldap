@@ -34,7 +34,7 @@ class Penguin_Login {
 		$options = &$this->settings->options;
 
 		// Connect to LDAP
-		$this->link_identifier = @ldap_connect( $options['server'],
+		$this->link_identifier = @ldap_connect( $options['protocol'] . $options['server'],
 			$options['port'] );
 
 		if ( ! $this->link_identifier ) {

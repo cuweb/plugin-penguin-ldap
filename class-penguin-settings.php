@@ -111,6 +111,8 @@ class Penguin_Settings {
 				 */
 				for ($i = 0; $i < $group_count; $i ++) {
 					if ( ! $this->role_exists ( $groups[$i][1] ) ) {
+						$lowest_priority_role = $this->get_lowest_priority_role();
+						$lowest_priority_role_name = $lowest_priority_role[0];
 						$groups[$i][1] = $lowest_priority_role_name;
 					}
 				}

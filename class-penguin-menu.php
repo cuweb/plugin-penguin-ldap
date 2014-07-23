@@ -173,10 +173,9 @@
 	public function my_action_callback() {
 		$this->penguin_settings->load_all_options();
 
-		$result;
-
-			$result = @ldap_connect( $this->penguin_settings->get_option( 'server' ),
-			$this->penguin_settings->get_option( 'port') );
+		$result = @ldap_connect( $this->penguin_settings->get_option( 'protocol' ) . 
+		$this->penguin_settings->get_option( 'server' ),
+		$this->penguin_settings->get_option( 'port') );
 
 		if ( $result != false) {
 			echo "Sucessfully connected.";
