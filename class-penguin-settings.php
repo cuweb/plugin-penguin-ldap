@@ -162,7 +162,7 @@ class Penguin_Settings {
 		// ---------------------------------------------------------------------
 		add_settings_section(
 			'penguin_general_section', // ID
-			'Penguin General Section', // Title
+			'General Section', // Title
 			array ($this, 'general_section_desc'), // Callback function
 			$this->option_key_general // Menu page (should match a menu slug)
 		);
@@ -321,7 +321,7 @@ class Penguin_Settings {
 		// ---------------------------------------------------------------------
 		add_settings_section(
 			'penguin_roles_section', // ID
-			'Penguin Roles Section', // Title
+			'Roles Section', // Title
 			array ($this, 'roles_section_desc'), // Callback function
 			$this->option_key_roles // Menu page (should match a menu slug)
 		);

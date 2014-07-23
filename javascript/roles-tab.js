@@ -273,7 +273,6 @@ j$(document).ready(function () {
 		function (val) {
 			var r = "<td><select " + options.attr + "=" + options.value + "[" + options.findIndex + "][1]>";
 			for (var prop in roles) {
-				// console.log ("prop: " + prop + " role: " + val);
 				if (prop == val) {
 					r += "<option selected='selected' value='" + prop + "'>" + roles[prop] + "</option>";
 				}
@@ -288,7 +287,6 @@ j$(document).ready(function () {
 	];
 	
 	new DynamicTable (options);
-	//var $tableSection = j$('#' + options.anchorID);
 
 	// Toggle view of the group mapping section when the checkbox is clicked
 	j$('#' + options.idPrefix + 'enable').click (function() {

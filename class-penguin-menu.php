@@ -69,10 +69,6 @@
 
 			<a href="<?php echo add_query_arg( array('tab' => 'help'), $_SERVER['REQUEST_URI']); ?>" class="nav-tab
 			<?php echo $active_tab == 'help' ? 'nav-tab-active' : ''; ?>">Help</a>
-			
-			<a href="<?php echo add_query_arg( array('tab' => 'error_codes'), $_SERVER['REQUEST_URI']); ?>" class="nav-tab
-			<?php echo $active_tab == 'error_codes' ? 'nav-tab-active' : ''; ?>">Error Codes</a>
-			
 			</h2>
 		</div>
 
@@ -121,49 +117,18 @@
 
 			echo "<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>";
 		}
-		else if ( $active_tab = "error_codes" ) {
-			?>
-			<table>
-				<tr>
-					<th>
-						ID
-					</th>
-					<th>
-						Error Type
-					</th>
-					<th>
-						Description
-					</th>
-				</tr>
-				<tr>
-					<td>
-						01
-					</td>
-					<td>
-						Cannot connect
-					</td>
-					<td>
-						When Lorem ipsum dolor sit amet
-					</td>
-				</tr>
-				
-			</table>
-			
-			<?php
-		}
 	}
 
 	public function test_ldap_connect_button() {
 		wp_enqueue_script( 'help_tab_script' ,
 				plugin_dir_url( __FILE__ ) . 'javascript/help-tab.js');
-
-			?>
-			<div id='test-section'>
-			<h3>Test server and port</h3>
-			<a class="button" id='test-button'>Test</a>
-			<p id="push-result" style="display:none;"></p>
-			</div>
-			<?php
+		?>
+		<div id='test-section'>
+		<h3>Test server and port</h3>
+		<a class="button" id='test-button'>Test</a>
+		<p id="push-result" style="display:none;"></p>
+		</div>
+		<?php
 	}
 
 	public function add_ajax_script() {

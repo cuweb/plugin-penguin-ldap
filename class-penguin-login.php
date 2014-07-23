@@ -21,13 +21,13 @@ class Penguin_Login {
 		}
 		
 		if ( empty( $username ) ){
-			return $this->error_message( "empty_username",
-				'The username field is empty.' );
+			return $this->error_message( 1,
+				'The username field is empty' );
 		}
 		
 		if ( empty( $password ) ){
-			return $this->error_message( "empty_password",
-				"The password field is empty." );
+			return $this->error_message( 2,
+				"The password field is empty" );
 		}
 		
 		$this->settings->load_all_options();
@@ -38,7 +38,7 @@ class Penguin_Login {
 			$options['port'] );
 
 		if ( ! $this->link_identifier ) {
-			return $this->error_message( "ldap_connect_fail", "LDAP error." );
+			return $this->error_message( 3, "Could not connect to LDAP", true);
 		}
 
 		//Set LDAP options
@@ -46,16 +46,16 @@ class Penguin_Login {
 			$options['protocol_version'] );
 
 		if ( ! $protocol_result ) {
-			return $this->error_message( "ldap_set_option_protocol_fail",
-				"Could not set protocol");
+			return $this->error_message( 4,
+				"Could not set protocol version", true );
 		}
 
 		$opt_ref_result = @ldap_set_option( $this->link_identifier, LDAP_OPT_REFERRALS,
 			$options['referrals'] );
 
 		if ( ! $opt_ref_result ) {
-			return $this->error_message( "ldap_set_option_opt_ref_fail",
-				"Could not set opt referrals" );
+			return $this->error_message( 5,
+				"Could not set opt referrals", true );
 		}
 
 		$this->bind = @ldap_bind( $this->link_identifier,
@@ -63,7 +63,7 @@ class Penguin_Login {
 
 		if ( ! $this->bind ) {
 			//do_action( 'wp_login_failed', $username );
-			return $this->error_message( "ldap_bind_fail", 'Invalid credentials.' );
+			return $this->error_message( 6, 'Invalid credentials' );
 		}
 
 		// True if the user exists, false otherwise
@@ -81,28 +81,28 @@ class Penguin_Login {
 			"(&$object_class_string(" . $options['login_field'] . "=" . $username . "))" );
 
 		if ( ! $result_identifier ) {
-			return $this->error_message( "ldap_search_fail",
-				'There was an error searching for your username.' );
+			return $this->error_message( 7,
+				'There was an error searching for your username' );
 		}
 
 		$entries = ldap_get_entries( $this->link_identifier, $result_identifier );
 
 		if ( ! $entries ) {
-			return $this->error_message( "ldap_get_entries_fail",
-				'There was an error searching for your username.' );
+			return $this->error_message( 8,
+				'There was an error searching for your username' );
 		}
 		
 		if ( is_array ( $entries ) ) {
 			if ( $entries['count'] != 1 ) {
-				return $this->error_message( "ldap_wrong_number_of_entries",
-					'Cannot find username.' );
+				return $this->error_message( 9,
+					'There was an error searching for your username' );
 			}
 			elseif ( isset ( $entries[0] ) ) {
 				$entry = $entries[0];
 			}
 			else {
-				return $this->error_message( "ldap_wrong_number_of_entries_2",
-					'Cannot find username.' );
+				return $this->error_message( 10,
+					'There was an error searching for your username' );
 			}
 		}
 		
@@ -113,7 +113,8 @@ class Penguin_Login {
 			return $email;
 		}
 		if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
-			return $this->error_message('ldap_invalid_email', 'LDAP Error.');
+			return $this->error_message( 11, 'Invalid email associated with this username',
+				true );
 		}
 
 		/**
@@ -203,8 +204,8 @@ class Penguin_Login {
 			}
 		}
 		else {
-			return $this->error_message('ldap_' . $attribute . '_undefined.', 'LDAP Error code: 3');
-			// Handle error here.
+			return $this->error_message( $attribute . '_undefined',
+				"$attrbute undefined.", true );
 		}
 	}
 
@@ -214,8 +215,8 @@ class Penguin_Login {
 
 		// The user doesn't belong to any groups, so they are not allowed access
 		if ( $ad_entry['memberof']['count'] === 0 ) {
-			return $this->error_message( "access_denied",
-				"You do not have permission to access this page." );
+			return $this->error_message( 12,
+				"You do not have permission to access this page" );
 		}
 		else {
 			// For each group this user is a member of
@@ -289,8 +290,8 @@ class Penguin_Login {
 
 			foreach ( $this->settings->get_option( 'priority' ) as $priorityValue ) {
 				if ( $priorityValue === '' ) {
-					return $this->error_message( 'ldap_unresolved_role_conflict',
-						'There are unresolved role conflicts.' );
+					return $this->error_message( 13,
+						'There are unresolved role conflicts', true);
 				}
 			}
 
@@ -306,11 +307,15 @@ class Penguin_Login {
 	}
 
 	// Returns a formatted error message and unbinds if necessary 
-	private function error_message( $code, $message ) {
+	private function error_message( $code, $message, $admin_needed = false ) {
 		if ( ( ! is_null( $this->link_identifier ) ) && ( ! is_null( $this->bind ) ) ) {
 			ldap_unbind( $this->link_identifier );
 		}
-		return new WP_Error ( $code, __( "<strong>ERROR</strong>: $message" ) );
+		
+		$admin_needed_message = $admin_needed ? "Please contact the administrator" : "";
+		
+		return new WP_Error ( "ldap_" . $code,
+			__( "<strong>ERROR</strong>: $message. $admin_needed_message" ) );
 	}
 }
 ?>
