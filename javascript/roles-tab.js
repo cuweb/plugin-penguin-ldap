@@ -240,7 +240,6 @@ DynamicTable.prototype.amountOfRows = function() {
 	return this.table.rows.length - 1; // -1 is to account for table header row
 };
 
-
 j$(document).ready(function () {
 	
 	var $tableSection = j$('.form-table').find('tr').eq(3);

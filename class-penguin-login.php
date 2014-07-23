@@ -20,6 +20,11 @@ class Penguin_Login {
 			return $user;
 		}
 		
+		if ( ! function_exists( 'ldap_connect' ) ) {
+			return $this->error_message( 0,
+				'LDAP support is missing', true);
+		}
+		
 		if ( empty( $username ) ){
 			return $this->error_message( 1,
 				'The username field is empty' );
@@ -78,7 +83,8 @@ class Penguin_Login {
 
 		$result_identifier = @ldap_search( $this->link_identifier,
 			$options['dn'],
-			"(&$object_class_string(" . $options['login_field'] . "=" . $username . "))" );
+			"(&$object_class_string(" . $options['login_field'] . "=" . $username . ")" .
+				$options['filter'] . ")" );
 
 		if ( ! $result_identifier ) {
 			return $this->error_message( 7,
@@ -205,7 +211,7 @@ class Penguin_Login {
 		}
 		else {
 			return $this->error_message( $attribute . '_undefined',
-				"$attrbute undefined.", true );
+				"\"$attribute\" is undefined", true );
 		}
 	}
 
@@ -309,10 +315,10 @@ class Penguin_Login {
 	// Returns a formatted error message and unbinds if necessary 
 	private function error_message( $code, $message, $admin_needed = false ) {
 		if ( ( ! is_null( $this->link_identifier ) ) && ( ! is_null( $this->bind ) ) ) {
-			ldap_unbind( $this->link_identifier );
+			@ldap_unbind( $this->link_identifier );
 		}
 		
-		$admin_needed_message = $admin_needed ? "Please contact the administrator" : "";
+		$admin_needed_message = $admin_needed ? "Please contact the administrator." : "";
 		
 		return new WP_Error ( "ldap_" . $code,
 			__( "<strong>ERROR</strong>: $message. $admin_needed_message" ) );

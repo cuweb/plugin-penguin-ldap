@@ -50,12 +50,6 @@ class Penguin_Settings {
 		$this->give_value_if_not_set ( 3,
 			'protocol_version' );
 
-		$this->give_value_if_not_set ( 'example username',
-			'user' );
-
-		$this->give_value_if_not_set ( '',
-			'password');
-
 		$this->give_value_if_not_set ( 'DC=value,DC=value,DC=value,',
 			'dn' );
 
@@ -64,9 +58,6 @@ class Penguin_Settings {
 
 		$this->give_value_if_not_set ( '',
 			'filter' );
-
-		$this->give_value_if_not_set ( 'samaccountname',
-			'display_name');
 
 		$this->give_value_if_not_set ( 'userprincipalname',
 			'email' );
@@ -187,7 +178,7 @@ class Penguin_Settings {
 
 		add_settings_field(
 			'pgn_extension', // ID
-			'Extension', // Title
+			'Extension (suffix)', // Title
 			array ($this, 'do_general_field_row') , // Callback function
 			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
@@ -222,24 +213,6 @@ class Penguin_Settings {
 		);
 
 		add_settings_field(
-			'pgn_user', // ID
-			'User', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'user' )
-		);
-
-		add_settings_field(
-			'pgn_password', // ID
-			'Password', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'password' )
-		);
-
-		add_settings_field(
 			'pgn_dn', // ID
 			'DN', // Title
 			array ($this, 'do_general_field_row') , // Callback function
@@ -259,20 +232,11 @@ class Penguin_Settings {
 
 		add_settings_field(
 			'pgn_filter', // ID
-			'Filter', // Title
+			'Additional Search Filter', // Title
 			array ($this, 'do_general_field_row') , // Callback function
 			$this->option_key_general, // Menu page (should match a menu slug)
 			'penguin_general_section', // Setting section this field belongs to
 			array ( 'filter' )
-		);
-
-		add_settings_field(
-			'pgn_display_name', // ID
-			'Display Name', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'display_name' )
 		);
 
 		add_settings_field(
@@ -619,11 +583,5 @@ class Penguin_Settings {
 			$this->options['priority'] = array();
 		}
 		$this->options['priority'][$role_key] = $priority;
-	}
-
-	private function get_role_name( $role, $data ) {
-		if ($role != false)
-			return	$data[$role]["name"];
-		return false;
 	}
 }

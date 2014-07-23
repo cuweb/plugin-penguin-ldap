@@ -85,7 +85,7 @@ $penguin_login = new Penguin_Login($penguin_settings);
 $penguin_authentication = true;
 
 if ( $penguin_authentication ) {
-	add_filter( 'authenticate', 'penguin_authenticate_callback', 999, 3 );
+	add_filter( 'authenticate', 'penguin_authenticate_callback', 100, 3 );
 }
 
 function penguin_authenticate_callback ( $user, $username, $password ) {

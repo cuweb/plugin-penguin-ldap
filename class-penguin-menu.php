@@ -83,7 +83,6 @@
 					$this->test_ldap_connect_button();
 					settings_fields( "pgn_general");
 					do_settings_sections( "pgn_general");
-					//do_settings_fields( "penguin_options", "penguin_general_section" );
 					submit_button( );
 					?>
 				</form>
