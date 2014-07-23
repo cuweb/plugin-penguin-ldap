@@ -62,12 +62,11 @@ class Penguin_Login {
 			return $this->error_message( 5,
 				"Could not set opt referrals", true );
 		}
-
+		
 		$this->bind = @ldap_bind( $this->link_identifier,
-			$username . $options['extension'], $password );
+			$options['prefix'] . $username . $options['extension'], $password );
 
 		if ( ! $this->bind ) {
-			//do_action( 'wp_login_failed', $username );
 			return $this->error_message( 6, 'Invalid credentials' );
 		}
 
