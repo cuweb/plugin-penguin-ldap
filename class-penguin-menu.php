@@ -17,7 +17,6 @@
 	}
 	// The menu
 	public function penguin_menu () {
-
 		?>
 		<style>
 			hr {
@@ -84,7 +83,6 @@
 					$this->test_ldap_connect_button();
 					settings_fields( "pgn_general");
 					do_settings_sections( "pgn_general");
-					//do_settings_fields( "penguin_options", "penguin_general_section" );
 					submit_button( );
 					?>
 				</form>
@@ -92,7 +90,7 @@
 
 			<?php
 		}
-		else if ( $active_tab == "roles" ) {
+		elseif ( $active_tab == "roles" ) {
 			// Very important!
 			$this->penguin_settings->load_all_options();
 			wp_enqueue_script( 'roles_tab_script' ,
@@ -113,7 +111,7 @@
 
 			<?php
 		}
-		else if ( $active_tab == "help" ) {
+		elseif ( $active_tab == "help" ) {
 			$this->test_ldap_connect_button();
 
 			echo "<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>";
@@ -123,14 +121,13 @@
 	public function test_ldap_connect_button() {
 		wp_enqueue_script( 'help_tab_script' ,
 				plugin_dir_url( __FILE__ ) . 'javascript/help-tab.js');
-
-			?>
-			<div id='test-section'>
-			<h3>Test server and port</h3>
-			<a class="button" id='test-button'>Test</a>
-			<p id="push-result" style="display:none;"></p>
-			</div>
-			<?php
+		?>
+		<div id='test-section'>
+		<h3>Test server and port</h3>
+		<a class="button" id='test-button'>Test</a>
+		<p id="push-result" style="display:none;"></p>
+		</div>
+		<?php
 	}
 
 	public function add_ajax_script() {
@@ -140,10 +137,9 @@
 	public function my_action_callback() {
 		$this->penguin_settings->load_all_options();
 
-		$result;
-
-			$result = @ldap_connect( $this->penguin_settings->get_option( 'server' ),
-			$this->penguin_settings->get_option( 'port') );
+		$result = @ldap_connect( $this->penguin_settings->get_option( 'protocol' ) . 
+		$this->penguin_settings->get_option( 'server' ),
+		$this->penguin_settings->get_option( 'port') );
 
 		if ( $result != false) {
 			echo "Sucessfully connected.";

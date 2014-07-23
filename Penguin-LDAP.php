@@ -3,7 +3,7 @@
  * Plugin Name: Penguin LDAP Authentication
  * Description:  Authenticate WordPress against active directory. Versioning uses major.minor.revision
  * All penguins will be authenticated.
- * Version: 1.1.0
+ * Version: 1.3.1
  * Authors: Brandon Leigh-Bennett & Michael Corkum
  * Author URI: http://www.carleton.ca/webservices
  */
@@ -53,22 +53,6 @@
  * wordpress is done in $penguin_settings, while $penguin_menu handles the tabs and
  * the displaying of these settings.
  */
- 
-/**
- * Would be nice:
- * -------------
- * @todo separation of loading tabs ( i.e. not loading all options when on one tab)
- *
- * Other:
- * -------
- * @todo make sure environment works in multiple places
- * @todo 'isldap' meta data?
- * @todo get arround using suppress errors (@)? what to do when error happens?
- * @todo replace dies with throws?
- * @todo roles is used often enough in penguin_settings to warrant it being an object
- * property.
- *
- */
 
 /* Entry point */
 define ( 'DEBUG', FALSE );
@@ -101,7 +85,7 @@ $penguin_login = new Penguin_Login($penguin_settings);
 $penguin_authentication = true;
 
 if ( $penguin_authentication ) {
-	add_filter( 'authenticate', 'penguin_authenticate_callback', 999, 3 );
+	add_filter( 'authenticate', 'penguin_authenticate_callback', 100, 3 );
 }
 
 function penguin_authenticate_callback ( $user, $username, $password ) {

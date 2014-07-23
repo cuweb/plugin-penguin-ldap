@@ -240,7 +240,6 @@ DynamicTable.prototype.amountOfRows = function() {
 	return this.table.rows.length - 1; // -1 is to account for table header row
 };
 
-
 j$(document).ready(function () {
 	
 	var $tableSection = j$('.form-table').find('tr').eq(3);
@@ -261,16 +260,7 @@ j$(document).ready(function () {
 	
 	options.headerRow = 
 		'<th>Group Name</th><th>Role</th>';
-		
-	var roleExists = function (roles, roleThatMightExist) {
-		for (role in roles) {
-			if (roleThatMightExist === role) {
-				return true;
-			}
-		}
-		return false;
-	};
-	
+			
 	// Define how the settings defined in the options object are outputed for each table data
 	options.rowSegment = [
 		function (val) {
@@ -280,17 +270,8 @@ j$(document).ready(function () {
 		},
 		
 		function (val) {
-			var missingValueNotify = '';
-			var missingValueText = '';
-			if (!roleExists(roles, val)) {
-				val = lowestPriorityRole[0];
-				missingValueNotify = "style='background-color:red'";
-				missingValueText = 'A mapped role has been deleted. Save changes with new role mapping to prevent lockout!';
-				alert(missingValueText);
-			}
-			var r = "<td><select " + missingValueNotify +  " " + options.attr + "=" + options.value + "[" + options.findIndex + "][1]>";
+			var r = "<td><select " + options.attr + "=" + options.value + "[" + options.findIndex + "][1]>";
 			for (var prop in roles) {
-				// console.log ("prop: " + prop + " role: " + val);
 				if (prop == val) {
 					r += "<option selected='selected' value='" + prop + "'>" + roles[prop] + "</option>";
 				}
@@ -305,7 +286,6 @@ j$(document).ready(function () {
 	];
 	
 	new DynamicTable (options);
-	//var $tableSection = j$('#' + options.anchorID);
 
 	// Toggle view of the group mapping section when the checkbox is clicked
 	j$('#' + options.idPrefix + 'enable').click (function() {

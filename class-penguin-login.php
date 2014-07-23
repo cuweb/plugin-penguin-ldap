@@ -1,7 +1,7 @@
 <?php
 
 class Penguin_Login {
-	private $enabled, $link_identifier, $bind, $penguin_settings, $options;
+	private $enabled, $link_identifier, $bind, $penguin_settings;
 
 	public function __construct( $penguin_settings ) {
 		$this->settings = $penguin_settings;
@@ -20,42 +20,49 @@ class Penguin_Login {
 			return $user;
 		}
 		
+		if ( ! function_exists( 'ldap_connect' ) ) {
+			return $this->error_message( 0,
+				'LDAP support is missing', true);
+		}
+		
 		if ( empty( $username ) ){
-			return $this->error_message( "empty_username",
-				'The username field is empty.' );
+			return $this->error_message( 1,
+				'The username field is empty' );
 		}
 		
 		if ( empty( $password ) ){
-			return $this->error_message( "empty_password",
-				"The password field is empty." );
+			return $this->error_message( 2,
+				"The password field is empty" );
 		}
 		
 		$this->settings->load_all_options();
+		$options = &$this->settings->options;
 
 		// Connect to LDAP
-		$this->link_identifier = @ldap_connect( $this->settings->options['server'],
-			$this->settings->options['port'] );
+		$this->link_identifier = @ldap_connect( $options['protocol'] . $options['server'],
+			$options['port'] );
 
 		if ( ! $this->link_identifier ) {
-			return $this->error_message( "ldap_connect_fail", "LDAP error." );
+			return $this->error_message( 3, "Could not connect to LDAP", true);
 		}
 
 		//Set LDAP options
 		$protocol_result = @ldap_set_option( $this->link_identifier, LDAP_OPT_PROTOCOL_VERSION,
-			$this->settings->options['protocol_version'] );
+			$options['protocol_version'] );
 
 		if ( ! $protocol_result ) {
-			return $this->error_message( "set_option_protocol_fail",
-				"Could not set protocol");
+			return $this->error_message( 4,
+				"Could not set protocol version", true );
 		}
 
 		$opt_ref_result = @ldap_set_option( $this->link_identifier, LDAP_OPT_REFERRALS,
-			$this->settings->options['referrals'] );
+			$options['referrals'] );
 
 		if ( ! $opt_ref_result ) {
-			return $this->error_message( "set_option_opt_ref_fail",
-				"Could not set opt referrals" );
+			return $this->error_message( 5,
+				"Could not set opt referrals", true );
 		}
+<<<<<<< HEAD
 
 		$ldapPrefix = "";
 		if($this->settings->options['prefix']) {
@@ -69,6 +76,14 @@ class Penguin_Login {
 		if ( ! $this->bind ) {
 			//do_action( 'wp_login_failed', $username );
 			return $this->error_message( "bind_fail", 'Invalid credentials.');
+=======
+		
+		$this->bind = @ldap_bind( $this->link_identifier,
+			$options['prefix'] . $username . $options['extension'], $password );
+
+		if ( ! $this->bind ) {
+			return $this->error_message( 6, 'Invalid credentials' );
+>>>>>>> development
 		}
 
 		// True if the user exists, false otherwise
@@ -76,48 +91,90 @@ class Penguin_Login {
 
 		$object_class_string = "";
 		if ( $this->settings->get_option( 'objectclass') !== "" ) {
-			$object_class_string = "( objectClass=" .
-			$this->settings->options['objectclass'] .
+			$object_class_string = "(objectClass=" .
+			$options['objectclass'] .
 			")";
 		}
 
 		$result_identifier = @ldap_search( $this->link_identifier,
-			$this->settings->options['dn'],
-			"(&$object_class_string(" . $this->settings->options['login_field'] . "=" . $username . "))" );
+			$options['dn'],
+			"(&$object_class_string(" . $options['login_field'] . "=" . $username . ")" .
+				$options['filter'] . ")" );
 
 		if ( ! $result_identifier ) {
-			do_action( 'wp_login_failed', $username );
-			return $this->error_message( "ldap_search_fail",
-				'There was an error searching for your username.' );
+			return $this->error_message( 7,
+				'There was an error searching for your username' );
 		}
 
 		$entries = ldap_get_entries( $this->link_identifier, $result_identifier );
 
 		if ( ! $entries ) {
-			return $this->error_message( "ldap_get_entries_fail",
-				'There was an error searching for your username.' );
+			return $this->error_message( 8,
+				'There was an error searching for your username' );
+		}
+		
+		if ( is_array ( $entries ) ) {
+			if ( $entries['count'] != 1 ) {
+				return $this->error_message( 9,
+					'There was an error searching for your username' );
+			}
+			elseif ( isset ( $entries[0] ) ) {
+				$entry = $entries[0];
+			}
+			else {
+				return $this->error_message( 10,
+					'There was an error searching for your username' );
+			}
+		}
+		
+		// Get the email attribute from this AD entry
+		$email = $this->get_ldap_user_attribute( $options['email'], $entry );
+		
+		if ( is_wp_error ( $email ) ) {
+			return $email;
+		}
+		if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
+			return $this->error_message( 11, 'Invalid email associated with this username',
+				true );
 		}
 
+		/**
+		 * If the user exists we want to get their user object, and give them a new 
+		 * random password. We give them a random password because WordPress requires
+		 * each user to have one. The random password given to a user is not meant to be 
+		 * used. If the user is in active directory, we use the password they entered in 
+		 * the password field to bind against ldap. If the bind was successful, then that
+		 * means they matched their ldap password.
+		 *  
+		 * Theoretically one could sign in using the password
+		 * that was generated, however this is extremely unlikely. You really should only
+		 * need to generate a new password once, but doing it on every login is more 
+		 * secure since it isn't static. If performance is an issue, remove the random
+		 * password generation at each login.
+		 */
 		if ( $user_exists ) {
 			$user_LDAP = get_user_by ( 'login', $username );
-			wp_set_password( wp_generate_password( ), $user_LDAP->ID );
+			wp_set_password( wp_generate_password(), $user_LDAP->ID );
 		}
+		/**
+		 * If the user doesn't exist we want to create a new WordPress user
+		 */
 		else {
-
-			if ( $entries['count'] != 1 ) {
-				return $this->error_message( "ldap_wrong_number_of_entries",
-					'Cannot find username.' );
+			// Generate a new user ID
+			$user_id = wp_create_user( $username, wp_generate_password(),
+				$email );
+			
+			/**
+			 * Sometimes wp_create_user() will return an WP_Error object. One example of
+			 * something that can go wrong is you attempt to add a user with an email
+			 * address that already belong to another user.
+			 */
+			if ( is_wp_error ( $user_id ) ) {
+				$err_code = $user_id->get_error_code();
+				return $this->error_message($err_code, $user_id->get_error_message( $err_code ) );
 			}
-
-			$email = $this->settings->options['email'];
-			if ( isset ( $entries[0][$email] ) ) {
-				if ( isset ( $entries[0][$email][0] ) ) {
-					$userID = wp_create_user( $username, wp_generate_password(),
-						$entries[0][$email][0] );
-					$user_LDAP = new WP_User( $userID );
-				}
-			}
-			// Need this?: return $this->error_message( "ldap_entries_error", 'Cannot find username.' );
+			
+			$user_LDAP = new WP_User( $user_id );
 		}
 		ldap_unbind( $this->link_identifier );
 
@@ -125,22 +182,52 @@ class Penguin_Login {
 		* If group mapping is not enabled, then assign the default role.
 		* Otherwise, look through what LDAP groups have been assigned to roles.
 		*/
-		if ( ! $this->settings->options['enable_group_mapping'] ) {
-			$user_LDAP->set_role( $this->settings->options['default_role'] );
+		if ( ! $options['enable_group_mapping'] ) {
+			$user_LDAP->set_role( $options['default_role'] );
 		}
 		else {
-			$this->set_user_role_from_group( $user_LDAP, $entries[0] );
+			$result = $this->set_user_role_from_group( $user_LDAP, $entry );
+			if ( is_wp_error ( $result ) ) {
+				return $result;
+			}
+		}
+		
+		/**
+		 * Update the user's first and last name in WordPress.
+		 */
+		$first_name = $this->get_ldap_user_attribute( $options['first_name'],
+			$entry);
+			
+		if ( is_wp_error( $first_name ) ) {
+			return $first_name;
 		}
 	
-		// Update the user's first and last name according to the settings
-		update_user_meta( $user_LDAP->ID,
-			'first_name',
-			$entries[0][$this->settings->options['first_name']][0] );
-		update_user_meta( $user_LDAP->ID,
-			'last_name',
-			$entries[0][$this->settings->options['last_name']][0] );
-
+		update_user_meta( $user_LDAP->ID, 'first_name', $first_name );
+		
+		$last_name = $this->get_ldap_user_attribute( $options['last_name'], 
+			$entry);
+			
+		if ( is_wp_error( $last_name ) ) {
+			return $last_name;
+		}	
+		update_user_meta( $user_LDAP->ID, 'last_name', $last_name );
+		
+		// $email has already been checked for errors previously
+		update_user_meta( $user_LDAP->ID, 'user_email', $email );
+		
 		return $user_LDAP;
+	}
+
+	private function get_ldap_user_attribute( $attribute, $ad_entry, $index = 0 ) {
+		if ( isset ( $ad_entry[$attribute] ) ) {
+			if ( isset ( $ad_entry[$attribute][$index] ) ) {
+				return $ad_entry[$attribute][$index];
+			}
+		}
+		else {
+			return $this->error_message( $attribute . '_undefined',
+				"\"$attribute\" is undefined", true );
+		}
 	}
 
 	private function set_user_role_from_group ( $wp_user, $ad_entry ) {
@@ -149,8 +236,8 @@ class Penguin_Login {
 
 		// The user doesn't belong to any groups, so they are not allowed access
 		if ( $ad_entry['memberof']['count'] === 0 ) {
-			return $this->error_message( "access_denied",
-				"You do not have permission to access this page." );
+			return $this->error_message( 12,
+				"You do not have permission to access this page" );
 		}
 		else {
 			// For each group this user is a member of
@@ -208,7 +295,7 @@ class Penguin_Login {
 						 * afterwards.
 						 *
 						 * $highest_role_priority_level is the highest priority level found
-						 * so far. We do a min( ) between the values of
+						 * so far. We do a min() between the values of
 						 * $highest_role_priority_level and the current priority of what role
 						 * we are on in the iteration.
 						 *
@@ -224,8 +311,8 @@ class Penguin_Login {
 
 			foreach ( $this->settings->get_option( 'priority' ) as $priorityValue ) {
 				if ( $priorityValue === '' ) {
-					$this->error_message( 'unresolved_role_conflict',
-						'There are unresolved role conflicts.' );
+					return $this->error_message( 13,
+						'There are unresolved role conflicts', true);
 				}
 			}
 
@@ -240,12 +327,16 @@ class Penguin_Login {
 		}
 	}
 
-	// Returns a formatted error message and unbinds
-	private function error_message( $code, $message ) {
+	// Returns a formatted error message and unbinds if necessary 
+	private function error_message( $code, $message, $admin_needed = false ) {
 		if ( ( ! is_null( $this->link_identifier ) ) && ( ! is_null( $this->bind ) ) ) {
-			ldap_unbind( $this->link_identifier );
+			@ldap_unbind( $this->link_identifier );
 		}
-		return new WP_Error ( $code, __( "<strong>ERROR</strong>: $message" ) );
+		
+		$admin_needed_message = $admin_needed ? "Please contact the administrator." : "";
+		
+		return new WP_Error ( "ldap_" . $code,
+			__( "<strong>ERROR</strong>: $message. $admin_needed_message" ) );
 	}
 }
 ?>

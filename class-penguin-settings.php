@@ -53,12 +53,6 @@ class Penguin_Settings {
 		$this->give_value_if_not_set ( 3,
 			'protocol_version' );
 
-		$this->give_value_if_not_set ( 'example username',
-			'user' );
-
-		$this->give_value_if_not_set ( '',
-			'password');
-
 		$this->give_value_if_not_set ( 'DC=value,DC=value,DC=value,',
 			'dn' );
 
@@ -67,9 +61,6 @@ class Penguin_Settings {
 
 		$this->give_value_if_not_set ( '',
 			'filter' );
-
-		$this->give_value_if_not_set ( 'samaccountname',
-			'display_name');
 
 		$this->give_value_if_not_set ( 'userprincipalname',
 			'email' );
@@ -84,7 +75,7 @@ class Penguin_Settings {
 			'objectclass');
 
 		$this->sync_priority_array();
-
+		
 		/**
 		 * If there is no default role setting or the default setting is set to a role
 		 * that no longer exists, set the default role to the lowest priority role to be
@@ -99,6 +90,28 @@ class Penguin_Settings {
 
 		$this->give_value_if_not_set ( 0,
 			'enable_group_mapping' );
+		
+		// If there are mapped groups
+		if ( isset ( $this->options['groups'] ) ) {
+			
+			// Reference the group array
+			$groups = &$this->options['groups'];
+			
+			if ( is_array ( $groups ) ) {
+				$group_count = count ( $groups );
+				/**
+				 * For every role a group is mapped to, check to see if it exists, if it 
+				 * doesn't, then give it the lowest priority.
+				 */
+				for ($i = 0; $i < $group_count; $i ++) {
+					if ( ! $this->role_exists ( $groups[$i][1] ) ) {
+						$lowest_priority_role = $this->get_lowest_priority_role();
+						$lowest_priority_role_name = $lowest_priority_role[0];
+						$groups[$i][1] = $lowest_priority_role_name;
+					}
+				}
+			}
+		}
 
 		$this->options_set = true;
 	}
@@ -136,333 +149,63 @@ class Penguin_Settings {
 			die ("Error: Options must be loaded in first with load_all_options.");
 		}
 	}
-
-	public function add_settings () {
-		// ---------------------------------------------------------------------
-		// GENERAL SECTION
-		// ---------------------------------------------------------------------
-		add_settings_section(
-			'penguin_general_section', // ID
-			'Penguin General Section', // Title
-			array ($this, 'general_section_desc'), // Callback function
-			$this->option_key_general // Menu page (should match a menu slug)
-		);
-
-		add_settings_field(
-			'pgn_server', // ID
-			'Server', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'server' )
-		);
-
-		add_settings_field(
-			'pgn_port', // ID
-			'Port', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'port' )
-		);
-
-		add_settings_field(
-			'pgn_prefix', // ID
-			'Prefix', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'prefix' )
-		);
-		
-		add_settings_field(
-			'pgn_extension', // ID
-			'Extension', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'extension' )
-		);
-
-		add_settings_field(
-			'pgn_protocol', // ID
-			'Protocol', // Title
-			array ($this, 'do_dropdown') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'protocol', array( 'ldap://', 'ldaps://' ) )
-		);
-
-		add_settings_field(
-			'pgn_referrals', // ID
-			'Referrals', // Title
-			array ($this, 'do_dropdown') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'referrals', array (0, 1) )
-		);
-
-		add_settings_field(
-			'pgn_protocol_version', // ID
-			'Protocol Version', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'protocol_version' )
-		);
-
-		add_settings_field(
-			'pgn_user', // ID
-			'User', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'user' )
-		);
-
-		add_settings_field(
-			'pgn_password', // ID
-			'Password', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'password' )
-		);
-
-		add_settings_field(
-			'pgn_dn', // ID
-			'DN', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'dn' )
-		);
-
-		add_settings_field(
-			'pgn_login_field', // ID
-			'Login Field', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'login_field' )
-		);
-
-		add_settings_field(
-			'pgn_filter', // ID
-			'Filter', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'filter' )
-		);
-
-		add_settings_field(
-			'pgn_display_name', // ID
-			'Display Name', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'display_name' )
-		);
-
-		add_settings_field(
-			'pgn_email', // ID
-			'Email', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'email' )
-		);
-
-		add_settings_field(
-			'pgn_first_name', // ID
-			'First Name', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'first_name' )
-		);
-
-		add_settings_field(
-			'pgn_last_name', // ID
-			'Last Name', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'last_name' )
-		);
-
-		add_settings_field(
-			'pgn_objectclass', // ID
-			'Objectclass', // Title
-			array ($this, 'do_general_field_row') , // Callback function
-			$this->option_key_general, // Menu page (should match a menu slug)
-			'penguin_general_section', // Setting section this field belongs to
-			array ( 'objectclass' )
-		);
-
-		register_setting(
-			$this->option_key_general, // Options group
-			$this->option_key_general  // Name of the option
-		);
-
-		// ---------------------------------------------------------------------
-		// ROLES SECTION
-		// ---------------------------------------------------------------------
-		add_settings_section(
-			'penguin_roles_section', // ID
-			'Penguin Roles Section', // Title
-			array ($this, 'roles_section_desc'), // Callback function
-			$this->option_key_roles // Menu page (should match a menu slug)
-		);
-
-		add_settings_field(
-			'penguin_priority',
-			'Penguin Priority',
-			array ($this, 'do_priority_section'),
-			$this->option_key_roles,
-			'penguin_roles_section'
-		);
-
-		add_settings_field(
-			'penguin_default_role', // ID
-			'Default Role', // Title
-			array ($this, 'field_default_role') , // Callback function
-			$this->option_key_roles, // Menu page (should match a menu slug)
-			'penguin_roles_section' // Setting section this field belongs to
-		);
-
-		add_settings_field(
-			'penguin_enable_mapping', // ID
-			'Enable group mapping', // Title
-			array ($this, 'do_enable_mapping_checkbox') , // Callback function
-			$this->option_key_roles, // Menu page (should match a menu slug)
-			'penguin_roles_section' // Setting section this field belongs to
-		);
-
-		add_settings_field(
-			'penguin_groups', // ID
-			'Group Mapping', // Title
-			array ($this, 'do_mapping_section') , // Callback function
-			$this->option_key_roles, // Menu page (should match a menu slug)
-			'penguin_roles_section', // Setting section this field belongs to
-			array ( 'groups' )
-		);
-
-		register_setting(
-			$this->option_key_roles, // Options group
-			$this->option_key_roles  // Name of the option
-		);
-	}
-
-	public function field_groups () {
-	}
-
-	public function general_section_desc () {
-		echo "<p>Configure Basic LDAP settings.</p>";
-	}
-
-	public function roles_section_desc () {
-		echo "<p>Map LDAP groups to WordPress roles.</p>";
-	}
 	
-	public function opt_str ( $key1, $key2 = null, $key3 = null) {
-		$s = $key1;
-		if ( isset( $key2 ) ) $s .= '[' . $key2 . ']';
-		if ( isset( $key3 ) ) $e .= '[' . $key3 . ']';
-		return $s;
-	}
-
-	public function do_dropdown ( $args ) {
-		$func_name = "do_dropdown";
-		if ( ! isset( $args[0] ) ) {
-			$this->arg_error( $func_name, 0);
-		}
-		if ( ! isset( $args[1] ) ) {
-			$this->arg_error( $func_name, 1);
-		}
-		$key = $args[0];
-		$options = (array) $args[1];
-
-		$options_length = count ($options);
-
-		echo '<select name="' . $this->opt_str( $this->option_key_general, $key ) . '">';
-		$value = $this->options[$key];
-		for ($i = 0; $i < $options_length; $i ++) {
-			if ($options[$i] == $value) {
-				$selected = 'selected="selected"';
-			}
-			else {
-				$selected = '';
-			}
-			echo '<option ' . $selected . ' value="' . $options[$i] . '">' . $options[$i] . '</option>';
-		}
-		echo '</select>';
-	}
-
-	private function arg_error ( $func_name, $index ) {
-		die ("argument missing at $index in function $func_name");
-	}
-
-	public function do_general_field_row ( $args ) {
-		echo '<input type="text" ' /*id="ld-'.$args[0].*/ . '" name="' . $this->opt_str( $this->option_key_general, $args[0] ) .'" value="' .
-			$this->get_option( $args[0] ) . '"/></td>';
-	}
-
-	public function field_default_role () {
-		?>
-			<select id="default-group" name="<?php 
-			echo $this->opt_str( $this->option_key_general, 'default_role' ); 
-			?>">
-			<?php wp_dropdown_roles( $this->options['default_role'] );?>
-			</select>
-		<?php
-	}
-
-	public function do_enable_mapping_checkbox () {
-		?>
-		<input id="grpmp-enable" type="checkbox" name="pgn_roles[enable_group_mapping]"
-		value="1" <?php checked( 1, $this->options['enable_group_mapping'] ); ?>/>
-		<?php
-	}
-
-	public function do_mapping_section ( $key ) {
+	/**
+	 * If these settings haven't been saved before, or a new role has been created,
+	 * then the priority array is empty or has some values that need to be set.
+	 * We need to look at the differences between the list of roles and the list of
+	 * roles than have been assigned priorities using array_diff_key(). The result
+	 * will give us all the roles that haven't been assigned a priority yet.
+	 */
+	private function sync_priority_array() {
 		if ( ! isset( $this->roles ) ) {
 			$this->load_roles();
 		}
 
-		if ( $key[0] != 'groups' ) return;
+		// Must be a reference (&)
+		$priority_array = &$this->options['priority'];
+		
+		// Check if it's an array
+		if ( is_array ( $priority_array ) ) {
 
-		$group_mapping_options = array (
-			'idPrefix' => 'grpmp-',
-			'value' => 'pgn_roles[groups]',
-			'attr' => 'name',
-			'rowSize' => 40,
-			'tableHeaders' => array ('Group Name', 'Role'),
-			'anchorID' => 'mapping-section',
-			'rowDataCount' => 2,
-			'initialSettings' => $this->get_option( 'groups' ),
-			'defaultSettings' => array ( "", "editor" )
-		);
+			// Go through the priority array and unset any roles that don't exist
+			foreach ( $priority_array as $role_name => $priority ) {
+				if ( ! $this->role_exists( $role_name ) ) {
+					unset( $priority_array[$role_name] );
+				}
+			}
+		}
 
-		echo '<div id="'.$group_mapping_options['anchorID'].'"></div>';
-		?>
+		// Make an array of keys that contain a list of all the roles that aren't in the
+		// priority array
+		$missing_roles = array_diff_key( (array) $this->roles, (array) $priority_array );
+					
+		// Find the lowest priority in the array
+		if ( is_array ( $priority_array ) ) {
+			$lowest_priority = max ( $priority_array );
+		}
+		else {
+			$lowest_priority = - 1;
+			$missing_roles = array_reverse( $missing_roles );
+		}
 
-		<script type="text/javascript">
-			var options = <?php echo json_encode( $group_mapping_options );?>;
-			var roles = <?php echo json_encode( $this->roles ); ?>;
-			<?php
-			/**
-			 * lowestPriorityRole is used to when an assigned role has been deleted.
-			 * It is safest to assign the user to the role chosen to be the least
-			 * powerful.
-			 */
-			?>
-			var lowestPriorityRole = <?php echo json_encode( $this->get_lowest_priority_role() ); ?>;
-			var enabled = "<?php echo $this->options['enable_group_mapping']; ?>";
-		</script>
+		// If there are missing roles roles to be added
+		if ( ! empty( $missing_roles ) ) {
 
-		<?php
+			// Go through the missing roles and add the index
+			foreach ( $missing_roles as $role_key => $role_val ) {
+
+				// Add index and increment the lowest priority value to an even lower value
+				$this->add_missing_priority_index( $role_key, ++ $lowest_priority );
+			}
+		}
+	}
+
+	private function add_missing_priority_index ($role_key, $priority) {
+		if ( ! isset ( $this->options['priority'] ) ) {
+			$this->options['priority'] = array();
+		}
+		$this->options['priority'][$role_key] = $priority;
 	}
 
 	private function get_lowest_priority_role () {
@@ -518,6 +261,305 @@ class Penguin_Settings {
 		return array_key_exists ( $role_name_that_might_exist, $this->roles );
 	}
 
+	public function add_settings () {
+		// ---------------------------------------------------------------------
+		// GENERAL SECTION
+		// ---------------------------------------------------------------------
+		add_settings_section(
+			'penguin_general_section', // ID
+			'General Section', // Title
+			array ($this, 'general_section_desc'), // Callback function
+			$this->option_key_general // Menu page (should match a menu slug)
+		);
+
+		add_settings_field(
+			'pgn_server', // ID
+			'Server', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'server' )
+		);
+
+		add_settings_field(
+			'pgn_port', // ID
+			'Port', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'port' )
+		);
+
+		add_settings_field(
+			'pgn_prefix', // ID
+			'Prefix', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'prefix' )
+		);
+		
+		add_settings_field(
+			'pgn_extension', // ID
+			'Extension (suffix)', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'extension' )
+		);
+
+		add_settings_field(
+			'pgn_protocol', // ID
+			'Protocol', // Title
+			array ($this, 'do_dropdown') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'protocol', array( 'ldap://', 'ldaps://' ) )
+		);
+
+		add_settings_field(
+			'pgn_referrals', // ID
+			'Referrals', // Title
+			array ($this, 'do_dropdown') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'referrals', array (0, 1) )
+		);
+
+		add_settings_field(
+			'pgn_protocol_version', // ID
+			'Protocol Version', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'protocol_version' )
+		);
+
+		add_settings_field(
+			'pgn_dn', // ID
+			'DN', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'dn' )
+		);
+
+		add_settings_field(
+			'pgn_login_field', // ID
+			'Login Field', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'login_field' )
+		);
+
+		add_settings_field(
+			'pgn_filter', // ID
+			'Additional Search Filter', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'filter' )
+		);
+
+		add_settings_field(
+			'pgn_email', // ID
+			'Email', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'email' )
+		);
+
+		add_settings_field(
+			'pgn_first_name', // ID
+			'First Name', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'first_name' )
+		);
+
+		add_settings_field(
+			'pgn_last_name', // ID
+			'Last Name', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'last_name' )
+		);
+
+		add_settings_field(
+			'pgn_objectclass', // ID
+			'Objectclass', // Title
+			array ($this, 'do_general_field_row') , // Callback function
+			$this->option_key_general, // Menu page (should match a menu slug)
+			'penguin_general_section', // Setting section this field belongs to
+			array ( 'objectclass' )
+		);
+
+		register_setting(
+			$this->option_key_general, // Options group
+			$this->option_key_general  // Name of the option
+		);
+
+		// ---------------------------------------------------------------------
+		// ROLES SECTION
+		// ---------------------------------------------------------------------
+		add_settings_section(
+			'penguin_roles_section', // ID
+			'Roles Section', // Title
+			array ($this, 'roles_section_desc'), // Callback function
+			$this->option_key_roles // Menu page (should match a menu slug)
+		);
+
+		add_settings_field(
+			'penguin_priority',
+			'Priority',
+			array ($this, 'do_priority_section'),
+			$this->option_key_roles,
+			'penguin_roles_section'
+		);
+
+		add_settings_field(
+			'penguin_default_role', // ID
+			'Default Role', // Title
+			array ($this, 'do_field_default_role') , // Callback function
+			$this->option_key_roles, // Menu page (should match a menu slug)
+			'penguin_roles_section' // Setting section this field belongs to
+		);
+
+		add_settings_field(
+			'penguin_enable_mapping', // ID
+			'Enable group mapping', // Title
+			array ($this, 'do_enable_mapping_checkbox') , // Callback function
+			$this->option_key_roles, // Menu page (should match a menu slug)
+			'penguin_roles_section' // Setting section this field belongs to
+		);
+
+		add_settings_field(
+			'penguin_groups', // ID
+			'Group Mapping', // Title
+			array ($this, 'do_mapping_section') , // Callback function
+			$this->option_key_roles, // Menu page (should match a menu slug)
+			'penguin_roles_section', // Setting section this field belongs to
+			array ( 'groups' )
+		);
+
+		register_setting(
+			$this->option_key_roles, // Options group
+			$this->option_key_roles  // Name of the option
+		);
+	}
+
+	public function general_section_desc () {
+		echo "<p>Configure Basic LDAP settings.</p>";
+	}
+
+	public function roles_section_desc () {
+		echo "<p>Map LDAP groups to WordPress roles.</p>";
+	}
+	
+	public function opt_str ( $key1, $key2 = null, $key3 = null) {
+		$s = $key1;
+		if ( isset( $key2 ) ) $s .= '[' . $key2 . ']';
+		if ( isset( $key3 ) ) $s .= '[' . $key3 . ']';
+		return $s;
+	}
+
+	public function do_dropdown ( $args ) {
+		$func_name = "do_dropdown";
+		if ( ! isset( $args[0] ) ) {
+			$this->arg_error( $func_name, 0);
+		}
+		if ( ! isset( $args[1] ) ) {
+			$this->arg_error( $func_name, 1);
+		}
+		$key = $args[0];
+		$options = (array) $args[1];
+
+		$options_length = count ($options);
+
+		echo '<select name="' . $this->opt_str( $this->option_key_general, $key ) . '">';
+		$value = $this->options[$key];
+		for ($i = 0; $i < $options_length; $i ++) {
+			if ($options[$i] == $value) {
+				$selected = 'selected="selected"';
+			}
+			else {
+				$selected = '';
+			}
+			echo '<option ' . $selected . ' value="' . $options[$i] . '">' . $options[$i] . '</option>';
+		}
+		echo '</select>';
+	}
+
+	private function arg_error ( $func_name, $index ) {
+		die ("argument missing at $index in function $func_name");
+	}
+
+	public function do_general_field_row ( $args ) {
+		echo '<input type="text" ' /*id="ld-'.$args[0].*/ . '" name="' . $this->opt_str( $this->option_key_general, $args[0] ) .'" value="' .
+			$this->get_option( $args[0] ) . '"/></td>';
+	}
+
+	public function do_field_default_role () {
+		?>
+			<select id="default-group" name="<?php 
+			echo $this->opt_str( $this->option_key_roles, 'default_role' ); 
+			?>">
+			<?php wp_dropdown_roles( $this->options['default_role'] );?>
+			</select>
+		<?php
+	}
+
+	public function do_enable_mapping_checkbox () {
+		?>
+		<input id="grpmp-enable" type="checkbox" name="pgn_roles[enable_group_mapping]"
+		value="1" <?php checked( 1, $this->options['enable_group_mapping'] ); ?>/>
+		<?php
+	}
+
+	public function do_mapping_section ( $key ) {
+		if ( ! isset( $this->roles ) ) {
+			$this->load_roles();
+		}
+
+		if ( $key[0] != 'groups' ) return;
+
+		$group_mapping_options = array (
+			'idPrefix' => 'grpmp-',
+			'value' => 'pgn_roles[groups]',
+			'attr' => 'name',
+			'rowSize' => 40,
+			'tableHeaders' => array ('Group Name', 'Role'),
+			'anchorID' => 'mapping-section',
+			'rowDataCount' => 2,
+			'initialSettings' => $this->get_option( 'groups' ),
+			'defaultSettings' => array ( "", "editor" )
+		);
+
+		echo '<div id="'.$group_mapping_options['anchorID'].'"></div>';
+		?>
+
+		<script type="text/javascript">
+			var options = <?php echo json_encode( $group_mapping_options );?>;
+			var roles = <?php echo json_encode( $this->roles ); ?>;
+			<?php
+			/**
+			 * lowestPriorityRole is used to when an assigned role has been deleted.
+			 * It is safest to assign the user to the role chosen to be the least
+			 * powerful.
+			 */
+			?>
+			var enabled = "<?php echo $this->options['enable_group_mapping']; ?>";
+		</script>
+
+		<?php
+	}
+
+	
+
 	public function do_priority_section () {
 		if ( ! isset( $this->roles ) ) {
 			$this->load_roles();
@@ -543,7 +585,7 @@ class Penguin_Settings {
 				$role = array_search( $priority_level, $priority_array );
 				if ( $this->role_exists( $role ) ) {
 					echo '<li><input type="text" style="display:none" name="'.
-						$this->option_key_general.'[priority]['. $role .']" value="' .
+						$this->option_key_roles.'[priority]['. $role .']" value="' .
 						$this->get_option('priority', $role) .
 						 '" readonly></input><label class="priority-grab">'. $this->roles[$role] .
 						 '</label></li>';
@@ -552,69 +594,5 @@ class Penguin_Settings {
 			}
 		}
 		echo '</ul>';
-	}
-
-	/**
-	 * If these settings haven't been saved before, or a new role has been created,
-	 * then the priority array is empty or has some values that need to be set.
-	 * We need to look at the differences between the list of roles and the list of
-	 * roles than have been assigned priorities using array_diff_key(). The result
-	 * will give us all the roles that haven't been assigned a priority yet.
-	 */
-	private function sync_priority_array() {
-		if ( ! isset( $this->roles ) ) {
-			$this->load_roles();
-		}
-
-		// Must be a reference (&)
-		$priority_array = &$this->options['priority'];
-
-		// Check if it's an array
-		if ( is_array ( $priority_array ) ) {
-
-			// Go through the priority array and unset any roles that don't exist
-			foreach ( $priority_array as $role_name => $priority ) {
-				if ( ! $this->role_exists( $role_name ) ) {
-					unset( $priority_array[$role_name] );
-				}
-			}
-		}
-
-		// Make an array of keys that contain a list of all the roles that aren't in the
-		// priority array
-		$missing_roles = array_diff_key( (array) $this->roles, (array) $priority_array );
-
-		// Find the lowest priority in the array
-		if ( is_array ( $priority_array ) ) {
-			$lowest_priority = max ( $priority_array );
-		}
-		else {
-			$lowest_priority = 0;
-			$missing_roles = array_reverse( $missing_roles );
-		}
-
-		// If there are missing roles roles to be added
-		if ( ! empty( $missing_roles ) ) {
-
-			// Go through the missing roles and add the index
-			foreach ( $missing_roles as $role_key => $role_val ) {
-
-				// Add index and increment the lowest priority value to an even lower value
-				$this->add_missing_priority_index( $role_key, $lowest_priority ++);
-			}
-		}
-	}
-
-	private function add_missing_priority_index ($role_key, $priority) {
-		if ( ! isset ( $this->options['priority'] ) ) {
-			$this->options['priority'] = array();
-		}
-		$this->options['priority'][$role_key] = $priority;
-	}
-
-	private function get_role_name( $role, $data ) {
-		if ($role != false)
-			return	$data[$role]["name"];
-		return false;
 	}
 }
