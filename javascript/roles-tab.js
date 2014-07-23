@@ -261,16 +261,7 @@ j$(document).ready(function () {
 	
 	options.headerRow = 
 		'<th>Group Name</th><th>Role</th>';
-		
-	var roleExists = function (roles, roleThatMightExist) {
-		for (role in roles) {
-			if (roleThatMightExist === role) {
-				return true;
-			}
-		}
-		return false;
-	};
-	
+			
 	// Define how the settings defined in the options object are outputed for each table data
 	options.rowSegment = [
 		function (val) {
@@ -280,15 +271,7 @@ j$(document).ready(function () {
 		},
 		
 		function (val) {
-			var missingValueNotify = '';
-			var missingValueText = '';
-			if (!roleExists(roles, val)) {
-				val = lowestPriorityRole[0];
-				missingValueNotify = "style='background-color:red'";
-				missingValueText = 'A mapped role has been deleted. Save changes with new role mapping to prevent lockout!';
-				alert(missingValueText);
-			}
-			var r = "<td><select " + missingValueNotify +  " " + options.attr + "=" + options.value + "[" + options.findIndex + "][1]>";
+			var r = "<td><select " + options.attr + "=" + options.value + "[" + options.findIndex + "][1]>";
 			for (var prop in roles) {
 				// console.log ("prop: " + prop + " role: " + val);
 				if (prop == val) {

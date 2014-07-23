@@ -71,7 +71,7 @@ class Penguin_Login {
 
 		$object_class_string = "";
 		if ( $this->settings->get_option( 'objectclass') !== "" ) {
-			$object_class_string = "( objectClass=" .
+			$object_class_string = "(objectClass=" .
 			$options['objectclass'] .
 			")";
 		}

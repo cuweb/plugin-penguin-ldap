@@ -81,7 +81,7 @@ class Penguin_Settings {
 			'objectclass');
 
 		$this->sync_priority_array();
-
+		
 		/**
 		 * If there is no default role setting or the default setting is set to a role
 		 * that no longer exists, set the default role to the lowest priority role to be
@@ -96,6 +96,26 @@ class Penguin_Settings {
 
 		$this->give_value_if_not_set ( 0,
 			'enable_group_mapping' );
+		
+		// If there are mapped groups
+		if ( isset ( $this->options['groups'] ) ) {
+			
+			// Reference the group array
+			$groups = &$this->options['groups'];
+			
+			if ( is_array ( $groups ) ) {
+				$group_count = count ( $groups );
+				/**
+				 * For every role a group is mapped to, check to see if it exists, if it 
+				 * doesn't, then give it the lowest priority.
+				 */
+				for ($i = 0; $i < $group_count; $i ++) {
+					if ( ! $this->role_exists ( $groups[$i][1] ) ) {
+						$groups[$i][1] = $lowest_priority_role_name;
+					}
+				}
+			}
+		}
 
 		$this->options_set = true;
 	}
@@ -306,7 +326,7 @@ class Penguin_Settings {
 
 		add_settings_field(
 			'penguin_priority',
-			'Penguin Priority',
+			'Priority',
 			array ($this, 'do_priority_section'),
 			$this->option_key_roles,
 			'penguin_roles_section'
@@ -398,9 +418,10 @@ class Penguin_Settings {
 	}
 
 	public function field_default_role () {
+		echo '<pre>'.$this->options['default_role'].'</pre>';
 		?>
 			<select id="default-group" name="<?php 
-			echo $this->opt_str( $this->option_key_general, 'default_role' ); 
+			echo $this->opt_str( $this->option_key_roles, 'default_role' ); 
 			?>">
 			<?php wp_dropdown_roles( $this->options['default_role'] );?>
 			</select>
@@ -446,7 +467,6 @@ class Penguin_Settings {
 			 * powerful.
 			 */
 			?>
-			var lowestPriorityRole = <?php echo json_encode( $this->get_lowest_priority_role() ); ?>;
 			var enabled = "<?php echo $this->options['enable_group_mapping']; ?>";
 		</script>
 
@@ -531,7 +551,7 @@ class Penguin_Settings {
 				$role = array_search( $priority_level, $priority_array );
 				if ( $this->role_exists( $role ) ) {
 					echo '<li><input type="text" style="display:none" name="'.
-						$this->option_key_general.'[priority]['. $role .']" value="' .
+						$this->option_key_roles.'[priority]['. $role .']" value="' .
 						$this->get_option('priority', $role) .
 						 '" readonly></input><label class="priority-grab">'. $this->roles[$role] .
 						 '</label></li>';
@@ -554,9 +574,10 @@ class Penguin_Settings {
 			$this->load_roles();
 		}
 
+		//echo "<pre>".print_r($this->options['priority'])."</pre>";
 		// Must be a reference (&)
 		$priority_array = &$this->options['priority'];
-
+		
 		// Check if it's an array
 		if ( is_array ( $priority_array ) ) {
 
@@ -571,13 +592,13 @@ class Penguin_Settings {
 		// Make an array of keys that contain a list of all the roles that aren't in the
 		// priority array
 		$missing_roles = array_diff_key( (array) $this->roles, (array) $priority_array );
-
+					
 		// Find the lowest priority in the array
 		if ( is_array ( $priority_array ) ) {
 			$lowest_priority = max ( $priority_array );
 		}
 		else {
-			$lowest_priority = 0;
+			$lowest_priority = - 1;
 			$missing_roles = array_reverse( $missing_roles );
 		}
 
@@ -588,7 +609,7 @@ class Penguin_Settings {
 			foreach ( $missing_roles as $role_key => $role_val ) {
 
 				// Add index and increment the lowest priority value to an even lower value
-				$this->add_missing_priority_index( $role_key, $lowest_priority ++);
+				$this->add_missing_priority_index( $role_key, ++ $lowest_priority );
 			}
 		}
 	}
