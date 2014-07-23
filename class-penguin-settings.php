@@ -418,7 +418,6 @@ class Penguin_Settings {
 	}
 
 	public function field_default_role () {
-		echo '<pre>'.$this->options['default_role'].'</pre>';
 		?>
 			<select id="default-group" name="<?php 
 			echo $this->opt_str( $this->option_key_roles, 'default_role' ); 
@@ -574,7 +573,6 @@ class Penguin_Settings {
 			$this->load_roles();
 		}
 
-		//echo "<pre>".print_r($this->options['priority'])."</pre>";
 		// Must be a reference (&)
 		$priority_array = &$this->options['priority'];
 		

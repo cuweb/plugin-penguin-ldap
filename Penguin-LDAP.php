@@ -3,7 +3,7 @@
  * Plugin Name: Penguin LDAP Authentication
  * Description:  Authenticate WordPress against active directory. Versioning uses major.minor.revision
  * All penguins will be authenticated.
- * Version: 1.2.0
+ * Version: 1.2.1
  * Authors: Brandon Leigh-Bennett & Michael Corkum
  * Author URI: http://www.carleton.ca/webservices
  */
