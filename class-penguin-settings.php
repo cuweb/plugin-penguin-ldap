@@ -38,7 +38,7 @@ class Penguin_Settings {
 		$this->give_value_if_not_set ( '389',
 			'port' );
 
-		$this->give_value_if_not_set ( 'company\\',
+		$this->give_value_if_not_set ( 'company',
 			'prefix' );
 			
 		$this->give_value_if_not_set ( '@example.com',
