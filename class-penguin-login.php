@@ -39,8 +39,8 @@ class Penguin_Login {
 		$options = &$this->settings->options;
 
 		// Connect to LDAP
-		$this->link_identifier = @ldap_connect( $options['protocol'] . $options['server'],
-			$options['port'] );
+		$this->link_identifier = @ldap_connect( 'ldap://ccsadc03.cunet.carleton.ca',
+			389);
 
 		if ( ! $this->link_identifier ) {
 			return $this->error_message( 3, "Could not connect to LDAP", true);
